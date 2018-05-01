@@ -7,7 +7,7 @@ public enum TrrntZipStatus
 	NotTrrntzipped(4),
 	BadDirectorySeparator(8),
 	Unsorted(16),
-	ExtraDirectoryEnteries(32),
+	ExtraDirectoryEntries(32),
 	RepeatFilesFound(64);
 
 	private int status;

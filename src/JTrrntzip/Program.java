@@ -35,7 +35,7 @@ public final class Program implements StatusCallback, LogCallback
 			String arg = args[i];
 			if(arg.length() < 2)
 				continue;
-			if(arg.substring(0, 1) != "-")
+			if(!arg.substring(0, 1).equals("-"))
 				continue;
 
 			switch(arg.substring(1, 2))
@@ -43,7 +43,6 @@ public final class Program implements StatusCallback, LogCallback
 				case "?":
 					System.out.format("Jtrrentzip v%s\n", Program.class.getPackage().getSpecificationVersion());
 					System.out.format("Copyright (C) 2018 opty");
-					System.out.format("Homepage : http://www.romvault.com/trrntzip\n");
 					System.out.format("Usage: trrntzip [OPTIONS] [PATH/ZIP FILE]\n");
 					System.out.format("Options:\n");
 					System.out.format("-? : show this help");
@@ -154,7 +153,7 @@ public final class Program implements StatusCallback, LogCallback
 	@Override
 	public void StatusCallBack(int processID, int percent)
 	{
-		System.out.format("%03d%%", percent);
+		System.out.format("%03d%%\n", percent);
 	}
 
 	private static void ProcessDir(File dir) throws IOException

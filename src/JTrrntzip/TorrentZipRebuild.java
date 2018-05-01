@@ -1,5 +1,6 @@
 package JTrrntzip;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,8 +12,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
+import java.util.zip.DeflaterOutputStream;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
 import JTrrntzip.SupportedFiles.ICompress;
@@ -30,7 +31,7 @@ public class TorrentZipRebuild
 		File tmpFilename = new File(filename.getParentFile(), FilenameUtils.getBaseName(filename.getName()) + ".tmp");
 
 		File outfilename = new File(filename.getParentFile(), FilenameUtils.getBaseName(filename.getName()) + ".zip");
-		if(FilenameUtils.getExtension(filename.getName()) == "7z")
+		if(FilenameUtils.getExtension(filename.getName()).equals("7z"))
 		{
 			if(outfilename.exists())
 			{
@@ -63,13 +64,20 @@ public class TorrentZipRebuild
 				AtomicLong streamSize = new AtomicLong();
 				AtomicInteger compMethod = new AtomicInteger();
 
-				ZipFile z = (ZipFile) originalZipFile;
 				ZipReturn zrInput = ZipReturn.ZipUntested;
-				if(z != null)
-					zrInput = z.ZipFileOpenReadStream(t.Index, false, readStream, streamSize, compMethod);
-				SevenZ z7 = (SevenZ) originalZipFile;
-				if(z7 != null)
-					zrInput = z7.ZipFileOpenReadStream(t.Index, readStream, streamSize);
+				ZipFile z = null;
+				if(originalZipFile instanceof ZipFile)
+				{
+					z = (ZipFile) originalZipFile;
+					if(z != null)
+						zrInput = z.ZipFileOpenReadStream(t.Index, false, readStream, streamSize, compMethod);
+				}
+				else
+				{
+					SevenZ z7 = (SevenZ) originalZipFile;
+					if(z7 != null)
+						zrInput = z7.ZipFileOpenReadStream(t.Index, readStream, streamSize);
+				}
 
 				AtomicReference<OutputStream> writeStream = new AtomicReference<>();
 				ZipReturn zrOutput = zipFileOut.ZipFileOpenWriteStream(false, true, t.Name, streamSize.get(), (short)8, writeStream);
@@ -78,31 +86,35 @@ public class TorrentZipRebuild
 				{
 					// Error writing local File.
 					zipFileOut.ZipFileClose();
+					zipFileOut.close();
 					originalZipFile.ZipFileClose();
 					tmpFilename.delete();
 					return TrrntZipStatus.CorruptZip;
 				}
 
 				CheckedInputStream crcCs = new CheckedInputStream(readStream.get(), new CRC32());
+				BufferedInputStream bcrcCs = new BufferedInputStream(crcCs, buffer.length);
 
 				long sizetogo = streamSize.get();
 				while(sizetogo > 0)
 				{
 					int sizenow = sizetogo > (long) bufferSize ? bufferSize : (int) sizetogo;
 
-					crcCs.read(buffer, 0, sizenow);
+					bcrcCs.read(buffer, 0, sizenow);
 					writeStream.get().write(buffer, 0, sizenow);
 					sizetogo = sizetogo - (long) sizenow;
 				}
-				writeStream.get().flush();
+				if(writeStream.get() instanceof DeflaterOutputStream)
+					((DeflaterOutputStream)writeStream.get()).finish();
 
 				// crcCs.close();
 				if(z != null)
 					originalZipFile.ZipFileCloseReadStream();
 
 				long crc = crcCs.getChecksum().getValue();
+				System.out.println(Long.toHexString(crc)+"<=>"+Integer.toHexString(t.CRC));
 
-				if(crc != t.CRC)
+				if((int)crc != t.CRC)
 					return TrrntZipStatus.CorruptZip;
 
 				zipFileOut.ZipFileCloseWriteStream(t.getCRC());
@@ -112,13 +124,14 @@ public class TorrentZipRebuild
 			zipFileOut.close();
 			originalZipFile.ZipFileClose();
 			originalZipFile.close();
-			filename.delete();
-			FileUtils.moveFile(tmpFilename, outfilename);
+		//	filename.delete();
+		//	FileUtils.moveFile(tmpFilename, outfilename);
 			return TrrntZipStatus.ValidTrrntzip;
 
 		}
-		catch(Exception e)
+		catch(Throwable e)
 		{
+			e.printStackTrace();
 			Optional.ofNullable(zipFileOut).ifPresent(t -> {
 				try
 				{

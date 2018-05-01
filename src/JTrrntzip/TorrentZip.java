@@ -53,12 +53,13 @@ public class TorrentZip
 
 		// if tza is now just 'ValidTrrntzip' the it is fully valid, and nothing needs to be done to it.
 
+		System.out.println(tzs);
 		if(tzs.contains(TrrntZipStatus.ValidTrrntzip) && !Program.ForceReZip || Program.CheckOnly)
 		{
 			StatusLogCallBack.StatusLogCallBack(ThreadID, "Skipping File");
 			return TrrntZipStatus.ValidTrrntzip;
 		}
-
+		System.out.println(Program.CheckOnly);
 		StatusLogCallBack.StatusLogCallBack(ThreadID, "TorrentZipping");
 		TrrntZipStatus fixedTzs = TorrentZipRebuild.ReZipFiles(zippedFiles, zipFile.get(), _buffer, StatusCallBack, StatusLogCallBack, ThreadID);
 		return fixedTzs;

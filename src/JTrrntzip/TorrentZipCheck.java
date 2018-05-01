@@ -23,9 +23,9 @@ public class TorrentZipCheck
             boolean fixDir = false;
             for (int j = 0; j < bytes.length; j++)
             {
-                if (bytes[j] != 92) continue;
+                if (bytes[j] != (char)'\\') continue;
                 fixDir = true;
-                bytes[j] = (char)47;
+                bytes[j] = (char)'/';
                 tzStatus.add(TrrntZipStatus.BadDirectorySeparator);
                 if (!error1 && Program.VerboseLogging)
                 {
@@ -48,7 +48,8 @@ public class TorrentZipCheck
             thisSortFound = false;
             for (int i = 0; i < zippedFiles.size() - 1; i++)
             {
-                int c = TrrntZipStringCompare(zippedFiles.get(i).Name, zippedFiles.get(i+1).Name);
+                //int c = TrrntZipStringCompare(zippedFiles.get(i).Name, zippedFiles.get(i+1).Name);
+                int c = zippedFiles.get(i).Name.compareToIgnoreCase(zippedFiles.get(i+1).Name);
                 if (c > 0)
                 {
                     ZippedFile T = zippedFiles.get(i);
@@ -81,7 +82,7 @@ public class TorrentZipCheck
         for (int i = 0; i < zippedFiles.size() - 1; i++)
         {
             // check if this is a directory entry
-            if (zippedFiles.get(i).Name.charAt(zippedFiles.get(i).Name.length() - 1) != 47)
+            if (!zippedFiles.get(i).Name.endsWith("/"))
                 continue;
 
             // check if the next filename is shorter or equal to this filename.
@@ -105,7 +106,7 @@ public class TorrentZipCheck
             if (delete)
             {
                 zippedFiles.remove(i);
-                tzStatus.add(TrrntZipStatus.ExtraDirectoryEnteries);
+                tzStatus.add(TrrntZipStatus.ExtraDirectoryEntries);
                 if (!error3 && Program.VerboseLogging)
                 {
                     error3 = true;
@@ -127,7 +128,7 @@ public class TorrentZipCheck
                 if (!error4 && Program.VerboseLogging)
                 {
                     error4 = true;
-                    System.out.println("Duplcate file enteries found");
+                    System.out.println("Duplicate file entries found");
                 }
             }
         }
@@ -135,7 +136,7 @@ public class TorrentZipCheck
         return tzStatus;
     }
 
-
+/*
 
     // perform an ascii based lower case string file compare
     private static int TrrntZipStringCompare(String string1, String string2)
@@ -164,5 +165,5 @@ public class TorrentZipCheck
             if (byte1 > byte2)
                 return 1;
         }
-    }
+    }*/
 }

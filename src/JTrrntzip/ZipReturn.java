@@ -9,7 +9,7 @@ public enum ZipReturn
     ZipExtraDataOnEndOfZip,
     ZipUnsupportedCompression,
     ZipLocalFileHeaderError,
-    ZipCenteralDirError,
+    ZipCentralDirError,
     ZipEndOfCentralDirectoryError,
     Zip64EndOfCentralDirError,
     Zip64EndOfCentralDirectoryLocatorError,
