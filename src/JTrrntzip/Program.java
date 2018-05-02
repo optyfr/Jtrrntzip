@@ -62,7 +62,7 @@ public final class Program extends AbstractTorrentZipOptions implements LogCallb
 				{
 					dirStream.forEach(path -> {
 						String ext = FilenameUtils.getExtension(path.getFileName().toString());
-						if(ext != null && (ext.equalsIgnoreCase("zip") || ext.equalsIgnoreCase("7z")))
+						if(ext != null && (ext.equalsIgnoreCase("zip")))
 						{
 							try
 							{
@@ -103,7 +103,7 @@ public final class Program extends AbstractTorrentZipOptions implements LogCallb
 			else
 			{
 				String ext = FilenameUtils.getExtension(f.getName());
-				if(ext != null && (ext.equalsIgnoreCase("zip") || ext.equalsIgnoreCase("7z")))
+				if(ext != null && (ext.equalsIgnoreCase("zip")))
 				{
 					tz.Process(f);
 				}

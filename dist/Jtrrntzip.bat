@@ -1,0 +1,1 @@
+java -jar Jtrrntzip.jar %*

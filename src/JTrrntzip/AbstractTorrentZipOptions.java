@@ -23,16 +23,17 @@ public class AbstractTorrentZipOptions implements TorrentZipOptions
 			{
 				case "-?":
 					System.out.format("Jtrrentzip v%s\n", Program.class.getPackage().getSpecificationVersion());
-					System.out.format("Copyright (C) 2018 opty");
+					System.out.format("Copyright (C) 2018 opty\n");
+					System.out.format("Based on trrntzipDN by GordonJ\n");
 					System.out.format("Usage: trrntzip [OPTIONS] [PATH/ZIP FILE]\n");
 					System.out.format("Options:\n");
-					System.out.format("-? : show this help");
-					System.out.format("-s : prevent sub-directory recursion");
-					System.out.format("-f : force re-zip");
-					System.out.format("-c : Check files only do not repair");
-					System.out.format("-l : verbose logging");
-					System.out.format("-v : show version");
-					System.out.format("-g : pause when finished");
+					System.out.format("-? : show this help\n");
+					System.out.format("-s : prevent sub-directory recursion\n");
+					System.out.format("-f : force re-zip\n");
+					System.out.format("-c : Check files only do not repair\n");
+					System.out.format("-l : verbose logging\n");
+					System.out.format("-v : show version\n");
+					System.out.format("-g : pause when finished\n");
 					return;
 				case "-s":
 					NoRecursion = true;

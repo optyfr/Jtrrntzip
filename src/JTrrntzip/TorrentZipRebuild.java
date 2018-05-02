@@ -17,10 +17,8 @@ import java.util.zip.DeflaterOutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import JTrrntzip.SupportedFiles.ICompress;
-import JTrrntzip.SupportedFiles.SevenZip.SevenZ;
 import JTrrntzip.SupportedFiles.ZipFile.ZipFile;
 
 public final class TorrentZipRebuild
@@ -30,21 +28,10 @@ public final class TorrentZipRebuild
 	{
 		int bufferSize = buffer.length;
 
-		long start = System.currentTimeMillis();
-
 		File filename = new File(originalZipFile.ZipFilename());
 		File tmpFilename = new File(filename.getParentFile(), FilenameUtils.getBaseName(filename.getName()) + ".tmp");
 
 		File outfilename = new File(filename.getParentFile(), FilenameUtils.getBaseName(filename.getName()) + ".zip");
-		if(FilenameUtils.getExtension(filename.getName()).equals("7z"))
-		{
-			if(outfilename.exists())
-			{
-				LogCallback.StatusLogCallBack("Error output .zip file already exists");
-				return TrrntZipStatus.RepeatFilesFound;
-			}
-
-		}
 
 		if(tmpFilename.exists())
 			tmpFilename.delete();
@@ -76,12 +63,6 @@ public final class TorrentZipRebuild
 					z = (ZipFile) originalZipFile;
 					if(z != null)
 						zrInput = z.ZipFileOpenReadStream(t.Index, false, readStream, streamSize, compMethod);
-				}
-				else
-				{
-					SevenZ z7 = (SevenZ) originalZipFile;
-					if(z7 != null)
-						zrInput = z7.ZipFileOpenReadStream(t.Index, readStream, streamSize);
 				}
 
 				AtomicReference<OutputStream> writeStream = new AtomicReference<>();
@@ -131,8 +112,6 @@ public final class TorrentZipRebuild
 			originalZipFile.close();
 			filename.delete();
 			FileUtils.moveFile(tmpFilename, outfilename);
-			System.out.println();
-			System.out.println(DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - start));
 			return TrrntZipStatus.ValidTrrntzip;
 
 		}

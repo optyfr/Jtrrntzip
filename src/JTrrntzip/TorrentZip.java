@@ -7,10 +7,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.commons.io.FilenameUtils;
-
 import JTrrntzip.SupportedFiles.ICompress;
-import JTrrntzip.SupportedFiles.SevenZip.SevenZ;
 import JTrrntzip.SupportedFiles.ZipFile.ZipFile;
 
 public final class TorrentZip
@@ -34,7 +31,7 @@ public final class TorrentZip
 		
 		statusLogCallBack.StatusLogCallBack(f.getName() + " - ");
 
-		// First open the zip (7z) file, and fail out if it is corrupt.
+		// First open the zip file, and fail out if it is corrupt.
 
 		AtomicReference<ICompress> zipFile = new AtomicReference<>();
 		EnumSet<TrrntZipStatus> tzs = OpenZip(f, zipFile);
@@ -66,11 +63,7 @@ public final class TorrentZip
 
 	private final EnumSet<TrrntZipStatus> OpenZip(File f, AtomicReference<ICompress> zipFile) throws IOException
 	{
-		String ext = FilenameUtils.getExtension(f.getName());
-		if(ext.equalsIgnoreCase("7z"))
-			zipFile.set(new SevenZ());
-		else
-			zipFile.set(new ZipFile());
+		zipFile.set(new ZipFile());
 
 		ZipReturn zr = zipFile.get().ZipFileOpen(f, f.lastModified(), true);
 		if(zr != ZipReturn.ZipGood)
