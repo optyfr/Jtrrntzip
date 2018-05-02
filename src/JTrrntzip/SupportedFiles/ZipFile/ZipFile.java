@@ -1166,7 +1166,7 @@ public final class ZipFile implements ICompress
 				{
 					// see if we found a directory
 					String filename0 = _localFiles.get(i).fileName;
-					if(!filename0.endsWith("/"))
+					if(filename0.charAt(filename0.length() - 1) != '/')
 						continue;
 
 					// see if the next file is in that directory
