@@ -63,20 +63,6 @@ public class SevenZ implements ICompress
 	}
 
 	@Override
-	public byte[] MD5(int i)
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public byte[] SHA1(int i)
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public ZipOpenType ZipOpen()
 	{
 		// TODO Auto-generated method stub

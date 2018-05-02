@@ -12,7 +12,7 @@ public class ZippedFile
 	public long Size;
 	public int CRC;
 
-	public byte[] getCRC()
+	public final byte[] getCRC()
 	{
 		ByteBuffer bb = ByteBuffer.allocate(4);
 		bb.order(ByteOrder.LITTLE_ENDIAN);
@@ -20,12 +20,12 @@ public class ZippedFile
 		return bb.array();
 	}
 
-	public void setCRC(byte[] value)
+	public final void setCRC(byte[] value)
 	{
 		CRC = ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN).getInt();
 	}
 	
-	public String toString()
+	public final String toString()
 	{
 		return Hex.encodeHexString(getCRC());
 	}

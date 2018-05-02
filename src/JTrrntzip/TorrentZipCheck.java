@@ -5,7 +5,7 @@ import java.util.List;
 
 public class TorrentZipCheck
 {
-    public static EnumSet<TrrntZipStatus> CheckZipFiles(List<ZippedFile> zippedFiles)
+    public static EnumSet<TrrntZipStatus> CheckZipFiles(List<ZippedFile> zippedFiles, LogCallback StatusLogCallBack)
     {
         EnumSet<TrrntZipStatus> tzStatus = EnumSet.noneOf(TrrntZipStatus.class);
 
@@ -27,10 +27,10 @@ public class TorrentZipCheck
                 fixDir = true;
                 bytes[j] = (char)'/';
                 tzStatus.add(TrrntZipStatus.BadDirectorySeparator);
-                if (!error1 && Program.VerboseLogging)
+                if (!error1 && StatusLogCallBack.isVerboseLogging())
                 {
                     error1 = true;
-                    System.out.println("Incorrect directory separator found");
+                    StatusLogCallBack.StatusLogCallBack("Incorrect directory separator found");
                 }
             }
             if (fixDir) t.Name = new String(bytes);
@@ -58,10 +58,10 @@ public class TorrentZipCheck
 
                     tzStatus.add(TrrntZipStatus.Unsorted);
                     thisSortFound = true;
-                    if (!error2 && Program.VerboseLogging)
+                    if (!error2 && StatusLogCallBack.isVerboseLogging())
                     {
                         error2 = true;
-                        System.out.println("Incorrect file order found");
+                        StatusLogCallBack.StatusLogCallBack("Incorrect file order found");
                     }
 
                 }
@@ -107,10 +107,10 @@ public class TorrentZipCheck
             {
                 zippedFiles.remove(i);
                 tzStatus.add(TrrntZipStatus.ExtraDirectoryEntries);
-                if (!error3 && Program.VerboseLogging)
+                if (!error3 && StatusLogCallBack.isVerboseLogging())
                 {
                     error3 = true;
-                    System.out.println("Un-needed directory records found");
+                    StatusLogCallBack.StatusLogCallBack("Un-needed directory records found");
                 }
 
                 i--;
@@ -122,13 +122,13 @@ public class TorrentZipCheck
         boolean error4 = false;
         for (int i = 0; i < zippedFiles.size() - 1; i++)
         {
-            if (zippedFiles.get(i).Name == zippedFiles.get(i+1).Name)
+            if (zippedFiles.get(i).Name.equals(zippedFiles.get(i+1).Name))
             {
                 tzStatus.add(TrrntZipStatus.RepeatFilesFound);
-                if (!error4 && Program.VerboseLogging)
+                if (!error4 && StatusLogCallBack.isVerboseLogging())
                 {
                     error4 = true;
-                    System.out.println("Duplicate file entries found");
+                    StatusLogCallBack.StatusLogCallBack("Duplicate file entries found");
                 }
             }
         }
@@ -136,34 +136,4 @@ public class TorrentZipCheck
         return tzStatus;
     }
 
-/*
-
-    // perform an ascii based lower case string file compare
-    private static int TrrntZipStringCompare(String string1, String string2)
-    {
-        char[] bytes1 = string1.toCharArray();
-        char[] bytes2 = string2.toCharArray();
-
-        int pos1 = 0;
-        int pos2 = 0;
-
-        for (;;)
-        {
-            if (pos1 == bytes1.length)
-                return ((pos2 == bytes2.length) ? 0 : -1);
-            if (pos2 == bytes2.length)
-                return 1;
-
-            int byte1 = bytes1[pos1++];
-            int byte2 = bytes2[pos2++];
-
-            if (byte1 >= 65 && byte1 <= 90) byte1 += 0x20;
-            if (byte2 >= 65 && byte2 <= 90) byte2 += 0x20;
-
-            if (byte1 < byte2)
-                return -1;
-            if (byte1 > byte2)
-                return 1;
-        }
-    }*/
 }

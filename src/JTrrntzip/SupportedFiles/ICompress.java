@@ -25,10 +25,6 @@ public interface ICompress extends Closeable, AutoCloseable
 
 	ZipReturn FileStatus(int i);
 
-	byte[] MD5(int i);
-
-	byte[] SHA1(int i);
-
 	ZipOpenType ZipOpen();
 
 	ZipReturn ZipFileOpen(File newFilename, long timestamp, boolean readHeaders) throws IOException;

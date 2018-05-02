@@ -10,7 +10,6 @@ import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -18,6 +17,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.zip.Checksum;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
@@ -29,44 +29,37 @@ import JTrrntzip.ZipStatus;
 import JTrrntzip.SupportedFiles.EnhancedSeekableByteChannel;
 import JTrrntzip.SupportedFiles.ICompress;
 
-public class ZipFile implements ICompress, AutoCloseable, Closeable
+public final class ZipFile implements ICompress
 {
-	final int Buffersize = 4096 * 1024;
-	private static byte[] _buffer0;
 
-	private final int LocalFileHeaderSignature = 0x04034b50;
-	private final int CentralDirectoryHeaderSignature = 0x02014b50;
-	private final int EndOfCentralDirSignature = 0x06054b50;
-	private final int Zip64EndOfCentralDirSignature = 0x06064b50;
-	private final int Zip64EndOfCentralDirectoryLocator = 0x07064b50;
+	private static final int LocalFileHeaderSignature = 0x04034b50;
+	private static final int CentralDirectoryHeaderSignature = 0x02014b50;
+	private static final int EndOfCentralDirSignature = 0x06054b50;
+	private static final int Zip64EndOfCentralDirSignature = 0x06064b50;
+	private static final int Zip64EndOfCentralDirectoryLocator = 0x07064b50;
 
-	private File _zipFileInfo;
-
-	public class LocalFile implements Closeable, AutoCloseable
+	public final static class LocalFile implements Closeable, AutoCloseable
 	{
 		private final EnhancedSeekableByteChannel esbc;
 
-		public String FileName;
+		public String fileName;
 		public short _generalPurposeBitFlag;
 		private short _compressionMethod;
 		private int _lastModFileTime;
 		private int _lastModFileDate;
-		public byte[] CRC;
+		public byte[] crc;
 		private long _compressedSize;
-		public long UncompressedSize;
-		public long RelativeOffsetOfLocalHeader; // only in centeral directory
+		public long _uncompressedSize;
+		public long relativeOffsetOfLocalHeader; // only in centeral directory
 
 		private long _crc32Location;
 		private long _extraLocation;
 		private long _dataLocation;
 
-		public boolean Zip64;
-		public boolean TrrntZip;
+		public boolean zip64;
+		public boolean _trrntZip;
 
-		public byte[] sha1;
-		public byte[] md5;
-
-		public ZipReturn FileStatus = ZipReturn.ZipUntested;
+		public ZipReturn fileStatus = ZipReturn.ZipUntested;
 
 		public LocalFile(EnhancedSeekableByteChannel esbc) throws IOException
 		{
@@ -75,17 +68,17 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 
 		public LocalFile(EnhancedSeekableByteChannel esbc, String filename) throws IOException
 		{
-			Zip64 = false;
+			zip64 = false;
 			this.esbc = esbc;
 			_generalPurposeBitFlag = 2; // Maximum Compression Deflating
 			_compressionMethod = 8; // Compression Method Deflate
 			_lastModFileTime = 48128;
 			_lastModFileDate = 8600;
 
-			FileName = filename;
+			fileName = filename;
 		}
 
-		public ZipReturn CentralDirectoryRead()
+		public final ZipReturn CentralDirectoryRead()
 		{
 			try
 			{
@@ -105,10 +98,10 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 
 				_lastModFileTime = esbc.getShort();
 				_lastModFileDate = esbc.getShort();
-				CRC = ReadCRC(esbc);
+				crc = ReadCRC(esbc);
 
 				_compressedSize = esbc.getInt();
-				UncompressedSize = esbc.getInt();
+				_uncompressedSize = esbc.getInt();
 
 				int fileNameLength = esbc.getShort();
 				int extraFieldLength = esbc.getShort();
@@ -118,11 +111,11 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 				esbc.getShort(); // internalFileAttributes
 				esbc.getInt(); // externalFileAttributes
 
-				RelativeOffsetOfLocalHeader = esbc.getInt();
+				relativeOffsetOfLocalHeader = esbc.getInt();
 
 				byte[] bFileName = new byte[fileNameLength];
 				esbc.get(bFileName);
-				FileName = (_generalPurposeBitFlag & (1 << 11)) == 0 ? new String(bFileName, Charset.forName("Cp437")) : new String(bFileName, Charset.forName("UTF8"));
+				fileName = (_generalPurposeBitFlag & (1 << 11)) == 0 ? new String(bFileName, Charset.forName("Cp437")) : new String(bFileName, Charset.forName("UTF8"));
 
 				byte[] extraField = new byte[extraFieldLength];
 				esbc.get(extraField);
@@ -137,13 +130,13 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 					switch(type)
 					{
 						case 0x0001:
-							Zip64 = true;
-							if(UncompressedSize == 0xffffffffL)
-								UncompressedSize = bb.getLong();
+							zip64 = true;
+							if(_uncompressedSize == 0xffffffffL)
+								_uncompressedSize = bb.getLong();
 							if(_compressedSize == 0xffffffffL)
 								_compressedSize = bb.getLong();
-							if(RelativeOffsetOfLocalHeader == 0xffffffffL)
-								RelativeOffsetOfLocalHeader = bb.getLong();
+							if(relativeOffsetOfLocalHeader == 0xffffffffL)
+								relativeOffsetOfLocalHeader = bb.getLong();
 							break;
 						case 0x7075:
 							@SuppressWarnings("unused")
@@ -161,7 +154,7 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 
 							byte[] dst = new byte[charLen];
 							bb.get(dst);
-							FileName = new String(dst, Charset.forName("UTF8"));
+							fileName = new String(dst, Charset.forName("UTF8"));
 
 							break;
 						default:
@@ -180,7 +173,7 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 
 		}
 
-		public void CenteralDirectoryWrite(EnhancedSeekableByteChannel esbc) throws IOException
+		public final void CenteralDirectoryWrite(EnhancedSeekableByteChannel esbc) throws IOException
 		{
 
 			final int header = 0x02014B50;
@@ -188,22 +181,22 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 			List<Byte> extraField = new ArrayList<>();
 
 			long cdUncompressedSize;
-			if(UncompressedSize >= 0xffffffffL)
+			if(_uncompressedSize >= 0xffffffffL)
 			{
 				new Exception().printStackTrace();
-				Zip64 = true;
+				zip64 = true;
 				cdUncompressedSize = 0xffffffffL;
-				for(byte b : ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN).putLong(UncompressedSize).array())
+				for(byte b : ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN).putLong(_uncompressedSize).array())
 					extraField.add(b);
 			}
 			else
-				cdUncompressedSize = UncompressedSize;
+				cdUncompressedSize = _uncompressedSize;
 
 			long cdCompressedSize;
 			if(_compressedSize >= 0xffffffffL)
 			{
 				new Exception().printStackTrace();
-				Zip64 = true;
+				zip64 = true;
 				cdCompressedSize = 0xffffffffL;
 				for(byte b : ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN).putLong(_compressedSize).array())
 					extraField.add(b);
@@ -212,16 +205,16 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 				cdCompressedSize = _compressedSize;
 
 			long cdRelativeOffsetOfLocalHeader;
-			if(RelativeOffsetOfLocalHeader >= 0xffffffffL)
+			if(relativeOffsetOfLocalHeader >= 0xffffffffL)
 			{
 				new Exception().printStackTrace();
-				Zip64 = true;
+				zip64 = true;
 				cdRelativeOffsetOfLocalHeader = 0xffffffffL;
-				for(byte b : ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN).putLong(RelativeOffsetOfLocalHeader).array())
+				for(byte b : ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN).putLong(relativeOffsetOfLocalHeader).array())
 					extraField.add(b);
 			}
 			else
-				cdRelativeOffsetOfLocalHeader = RelativeOffsetOfLocalHeader;
+				cdRelativeOffsetOfLocalHeader = relativeOffsetOfLocalHeader;
 
 			if(extraField.size() > 0)
 			{
@@ -236,16 +229,16 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 
 			byte[] bFileName;
 
-			if(!Charset.forName("Cp437").newEncoder().canEncode(FileName))
+			if(!Charset.forName("Cp437").newEncoder().canEncode(fileName))
 			{
 				_generalPurposeBitFlag |= 1 << 11;
-				bFileName = FileName.getBytes(Charset.forName("UTF8"));
+				bFileName = fileName.getBytes(Charset.forName("UTF8"));
 			}
 			else
-				bFileName = FileName.getBytes(Charset.forName("Cp437"));
+				bFileName = fileName.getBytes(Charset.forName("Cp437"));
 			int fileNameLength = bFileName.length;
 
-			int versionNeededToExtract = (Zip64 ? 45 : 20);
+			int versionNeededToExtract = (zip64 ? 45 : 20);
 
 			esbc.putInt(header); // 4
 			esbc.putShort((short) 0); // 6
@@ -254,7 +247,7 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 			esbc.putShort((short) _compressionMethod); // 12
 			esbc.putShort((short) _lastModFileTime); // 14
 			esbc.putShort((short) _lastModFileDate); // 16
-			esbc.put(CRC); // 20
+			esbc.put(crc); // 20
 			esbc.putInt((int) cdCompressedSize); // 24
 			esbc.putInt((int) cdUncompressedSize); // 28
 			esbc.putShort((short) fileNameLength); // 30
@@ -270,13 +263,13 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 			// No File Comment
 		}
 
-		public ZipReturn LocalFileHeaderRead()
+		public final ZipReturn LocalFileHeaderRead()
 		{
 			try
 			{
-				TrrntZip = true;
+				_trrntZip = true;
 
-				esbc.position((int) RelativeOffsetOfLocalHeader);
+				esbc.position((int) relativeOffsetOfLocalHeader);
 				int thisSignature = esbc.getInt();
 				if(thisSignature != LocalFileHeaderSignature)
 					return ZipReturn.ZipLocalFileHeaderError;
@@ -284,7 +277,7 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 				esbc.getShort(); // version needed to extract
 				int generalPurposeBitFlagLocal = (int) esbc.getShort();
 				if(generalPurposeBitFlagLocal != _generalPurposeBitFlag)
-					TrrntZip = false;
+					_trrntZip = false;
 
 				int tshort = (int) esbc.getShort();
 				if(tshort != _compressionMethod)
@@ -299,23 +292,23 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 					return ZipReturn.ZipLocalFileHeaderError;
 
 				byte[] tCRC = ReadCRC(esbc);
-				if(((_generalPurposeBitFlag & 8) == 0) && !Arrays.equals(tCRC, CRC))
+				if(((_generalPurposeBitFlag & 8) == 0) && !Arrays.equals(tCRC, crc))
 					return ZipReturn.ZipLocalFileHeaderError;
 
 				long tCompressedSize = (long) esbc.getInt();
-				if(Zip64 && tCompressedSize != 0xffffffffL && tCompressedSize != _compressedSize) // if Zip64 File then the compressedSize should be 0xffffffff
+				if(zip64 && tCompressedSize != 0xffffffffL && tCompressedSize != _compressedSize) // if Zip64 File then the compressedSize should be 0xffffffff
 					return ZipReturn.ZipLocalFileHeaderError;
 				if((_generalPurposeBitFlag & 8) == 8 && tCompressedSize != 0) // if bit 4 set then no compressedSize is set yet
 					return ZipReturn.ZipLocalFileHeaderError;
-				if(!Zip64 && (_generalPurposeBitFlag & 8) != 8 && tCompressedSize != _compressedSize) // check the compressedSize
+				if(!zip64 && (_generalPurposeBitFlag & 8) != 8 && tCompressedSize != _compressedSize) // check the compressedSize
 					return ZipReturn.ZipLocalFileHeaderError;
 
 				long tUnCompressedSize = (long) esbc.getInt();
-				if(Zip64 && tUnCompressedSize != 0xffffffffL && tUnCompressedSize != UncompressedSize) // if Zip64 File then the unCompressedSize should be 0xffffffff
+				if(zip64 && tUnCompressedSize != 0xffffffffL && tUnCompressedSize != _uncompressedSize) // if Zip64 File then the unCompressedSize should be 0xffffffff
 					return ZipReturn.ZipLocalFileHeaderError;
 				if((_generalPurposeBitFlag & 8) == 8 && tUnCompressedSize != 0) // if bit 4 set then no unCompressedSize is set yet
 					return ZipReturn.ZipLocalFileHeaderError;
-				if(!Zip64 && (_generalPurposeBitFlag & 8) != 8 && tUnCompressedSize != UncompressedSize) // check the unCompressedSize
+				if(!zip64 && (_generalPurposeBitFlag & 8) != 8 && tUnCompressedSize != _uncompressedSize) // check the unCompressedSize
 					return ZipReturn.ZipLocalFileHeaderError;
 
 				int fileNameLength = (int) esbc.getShort();
@@ -328,7 +321,7 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 				byte[] extraField = new byte[extraFieldLength];
 				esbc.get(extraField);
 
-				Zip64 = false;
+				zip64 = false;
 				ByteBuffer bb = ByteBuffer.wrap(extraField).order(ByteOrder.LITTLE_ENDIAN);
 				while(extraFieldLength > bb.position())
 				{
@@ -337,11 +330,11 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 					switch(type)
 					{
 						case 0x0001:
-							Zip64 = true;
+							zip64 = true;
 							if(tUnCompressedSize == 0xffffffffL)
 							{
 								long tLong = bb.getLong();
-								if(tLong != UncompressedSize)
+								if(tLong != _uncompressedSize)
 									return ZipReturn.ZipLocalFileHeaderError;
 							}
 							if(tCompressedSize == 0xffffffffL)
@@ -367,7 +360,7 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 
 							byte[] dst = new byte[charLen];
 							bb.get(dst);
-							FileName = new String(dst, Charset.forName("UTF8"));
+							fileName = new String(dst, Charset.forName("UTF8"));
 
 							break;
 						default:
@@ -376,7 +369,7 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 					}
 				}
 
-				if(!FileName.equals(tFileName))
+				if(!fileName.equals(tFileName))
 					return ZipReturn.ZipLocalFileHeaderError;
 
 				_dataLocation = esbc.position();
@@ -390,7 +383,7 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 				if(!Arrays.equals(tCRC, new byte[] { 0x50, 0x4b, 0x07, 0x08 }))
 					tCRC = ReadCRC(esbc);
 
-				if(!Arrays.equals(tCRC, CRC))
+				if(!Arrays.equals(tCRC, crc))
 					return ZipReturn.ZipLocalFileHeaderError;
 
 				long tint = (long) esbc.getInt();
@@ -398,7 +391,7 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 					return ZipReturn.ZipLocalFileHeaderError;
 
 				tint = (long) esbc.getInt();
-				if(tint != UncompressedSize)
+				if(tint != _uncompressedSize)
 					return ZipReturn.ZipLocalFileHeaderError;
 
 				return ZipReturn.ZipGood;
@@ -411,13 +404,13 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 
 		}
 
-		public ZipReturn LocalFileHeaderReadQuick()
+		public final ZipReturn LocalFileHeaderReadQuick()
 		{
 			try
 			{
-				TrrntZip = true;
+				_trrntZip = true;
 
-				esbc.position((int) RelativeOffsetOfLocalHeader);
+				esbc.position((int) relativeOffsetOfLocalHeader);
 				int thisSignature = esbc.getInt();
 				if(thisSignature != LocalFileHeaderSignature)
 					return ZipReturn.ZipLocalFileHeaderError;
@@ -430,9 +423,9 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 				_compressionMethod = esbc.getShort();
 				_lastModFileTime = (int) esbc.getShort();
 				_lastModFileDate = (int) esbc.getShort();
-				CRC = ReadCRC(esbc);
+				crc = ReadCRC(esbc);
 				_compressedSize = (long) esbc.getInt();
-				UncompressedSize = (long) esbc.getInt();
+				_uncompressedSize = (long) esbc.getInt();
 
 				int fileNameLength = (int) esbc.getShort();
 				int extraFieldLength = (int) esbc.getShort();
@@ -445,7 +438,7 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 				byte[] extraField = new byte[extraFieldLength];
 				esbc.get(extraField);
 
-				Zip64 = false;
+				zip64 = false;
 				ByteBuffer bb = ByteBuffer.wrap(extraField).order(ByteOrder.LITTLE_ENDIAN);
 				while(extraFieldLength > bb.position())
 				{
@@ -454,9 +447,9 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 					switch(type)
 					{
 						case 0x0001:
-							Zip64 = true;
-							if(UncompressedSize == 0xffffffffL)
-								UncompressedSize = bb.getLong();
+							zip64 = true;
+							if(_uncompressedSize == 0xffffffffL)
+								_uncompressedSize = bb.getLong();
 							if(_compressedSize == 0xffffffffL)
 								_compressedSize = bb.getLong();
 							break;
@@ -476,7 +469,7 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 
 							byte[] dst = new byte[charLen];
 							bb.get(dst);
-							FileName = new String(dst, Charset.forName("UTF8"));
+							fileName = new String(dst, Charset.forName("UTF8"));
 							break;
 						default:
 							bb.position(bb.position() + blockLength);
@@ -496,26 +489,26 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 
 		}
 
-		private void LocalFileHeaderWrite() throws IOException
+		private final void LocalFileHeaderWrite() throws IOException
 		{
 			List<Byte> extraField = new ArrayList<>();
-			Zip64 = UncompressedSize >= 0xffffffffL;
-				if(Zip64)
+			zip64 = _uncompressedSize >= 0xffffffffL;
+			if(zip64)
 				new Exception().printStackTrace();
 
 			byte[] bFileName;
 
-			if(!Charset.forName("Cp437").newEncoder().canEncode(FileName))
+			if(!Charset.forName("Cp437").newEncoder().canEncode(fileName))
 			{
 				_generalPurposeBitFlag |= 1 << 11;
-				bFileName = FileName.getBytes(Charset.forName("UTF8"));
+				bFileName = fileName.getBytes(Charset.forName("UTF8"));
 			}
 			else
-				bFileName = FileName.getBytes(Charset.forName("Cp437"));
+				bFileName = fileName.getBytes(Charset.forName("Cp437"));
 
-			int versionNeededToExtract = (Zip64 ? 45 : 20);
+			int versionNeededToExtract = (zip64 ? 45 : 20);
 
-			RelativeOffsetOfLocalHeader = esbc.position();
+			relativeOffsetOfLocalHeader = esbc.position();
 			final int header = 0x4034B50;
 
 			esbc.putInt(header); // 4
@@ -532,7 +525,7 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 			esbc.putInt(0xFFFFFFFF);
 			esbc.putInt(0xFFFFFFFF);
 
-			if(Zip64)
+			if(zip64)
 			{
 				for(int i = 0; i < 20; i++)
 					extraField.add((byte) 0);
@@ -553,7 +546,7 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 
 		private InputStream _readStream;
 
-		public ZipReturn LocalFileOpenReadStream(boolean raw, AtomicReference<InputStream> stream, AtomicLong streamSize, AtomicInteger compressionMethod) throws IOException
+		public final ZipReturn LocalFileOpenReadStream(boolean raw, AtomicReference<InputStream> stream, AtomicLong streamSize, AtomicInteger compressionMethod) throws IOException
 		{
 			streamSize.set(0);
 			compressionMethod.set(_compressionMethod);
@@ -572,7 +565,7 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 					else
 					{
 						_readStream = new InflaterInputStream(esbc.getInputStream(), new Inflater(true));
-						streamSize.set(UncompressedSize);
+						streamSize.set(_uncompressedSize);
 
 					}
 					break;
@@ -585,22 +578,22 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 			return stream.get() == null ? ZipReturn.ZipErrorGettingDataStream : ZipReturn.ZipGood;
 		}
 
-		public ZipReturn LocalFileCloseReadStream() throws IOException
+		public final ZipReturn LocalFileCloseReadStream() throws IOException
 		{
 			InputStream dfStream = _readStream;
 			if(dfStream != null)
 			{
-			//	dfStream.close();
+				// dfStream.close();
 			}
-		//	close();
+			// close();
 			return ZipReturn.ZipGood;
 		}
 
 		private OutputStream _writeStream;
 
-		public ZipReturn LocalFileOpenWriteStream(boolean raw, boolean trrntZip, long uncompressedSize, short compressionMethod, AtomicReference<OutputStream> stream) throws IOException
+		public final ZipReturn LocalFileOpenWriteStream(boolean raw, boolean trrntZip, long uncompressedSize, short compressionMethod, AtomicReference<OutputStream> stream) throws IOException
 		{
-			UncompressedSize = uncompressedSize;
+			_uncompressedSize = uncompressedSize;
 			_compressionMethod = compressionMethod;
 
 			LocalFileHeaderWrite();
@@ -609,19 +602,19 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 			if(raw)
 			{
 				_writeStream = esbc.getOutputStream();
-				TrrntZip = trrntZip;
+				_trrntZip = trrntZip;
 			}
 			else
 			{
 				if(compressionMethod == 0)
 				{
 					_writeStream = esbc.getOutputStream();
-					TrrntZip = false;
+					_trrntZip = false;
 				}
 				else
 				{
 					_writeStream = new DeflaterOutputStream(esbc.getOutputStream(), new Deflater(9, true), false);
-					TrrntZip = true;
+					_trrntZip = true;
 				}
 			}
 
@@ -629,34 +622,30 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 			return stream.get() == null ? ZipReturn.ZipErrorGettingDataStream : ZipReturn.ZipGood;
 		}
 
-		public ZipReturn LocalFileCloseWriteStream(byte[] crc32) throws IOException
+		public final ZipReturn LocalFileCloseWriteStream(byte[] crc32) throws IOException
 		{
 			OutputStream dfStream = _writeStream;
 			if(dfStream != null)
 			{
 				dfStream.flush();
-			//	dfStream.close();
+				// dfStream.close();
 			}
 
-			System.out.println(UncompressedSize);
-
 			_compressedSize = esbc.position() - _dataLocation;
-			
-			System.out.println(UncompressedSize+" => "+_compressedSize);
 
-			if(_compressedSize == 0 && UncompressedSize == 0)
+			if(_compressedSize == 0 && _uncompressedSize == 0)
 			{
 				LocalFileAddDirectory();
 				_compressedSize = esbc.position() - _dataLocation;
 			}
 
-			CRC = crc32;
+			crc = crc32;
 			WriteCompressedSize();
-		//	close();
+			// close();
 			return ZipReturn.ZipGood;
 		}
 
-		private void WriteCompressedSize() throws IOException
+		private final void WriteCompressedSize() throws IOException
 		{
 			long posNow = esbc.position();
 
@@ -664,7 +653,7 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 
 			long tCompressedSize;
 			long tUncompressedSize;
-			if(Zip64)
+			if(zip64)
 			{
 				tCompressedSize = 0xffffffffL;
 				tUncompressedSize = 0xffffffffL;
@@ -672,20 +661,20 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 			else
 			{
 				tCompressedSize = _compressedSize;
-				tUncompressedSize = UncompressedSize;
+				tUncompressedSize = _uncompressedSize;
 			}
 
-			esbc.put(CRC);
+			esbc.put(crc);
 			esbc.putInt((int) tCompressedSize);
 			esbc.putInt((int) tUncompressedSize);
 
 			// also need to write extradata
-			if(Zip64)
+			if(zip64)
 			{
 				esbc.position(_extraLocation);
 				esbc.putShort((short) 0x0001); // id
 				esbc.putShort((short) 16); // data length
-				esbc.putLong(UncompressedSize);
+				esbc.putLong(_uncompressedSize);
 				esbc.putLong(_compressedSize);
 			}
 
@@ -693,9 +682,9 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 
 		}
 
-		public void LocalFileCheck()
+		public final void LocalFileCheck()
 		{
-			if(FileStatus != ZipReturn.ZipUntested)
+			if(fileStatus != ZipReturn.ZipUntested)
 				return;
 
 			try
@@ -715,24 +704,18 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 
 				if(sInput == null)
 				{
-					FileStatus = ZipReturn.ZipErrorGettingDataStream;
+					fileStatus = ZipReturn.ZipErrorGettingDataStream;
 					return;
 				}
 
-				if(_buffer0 == null)
-				{
-					_buffer0 = new byte[Buffersize];
-				}
-
-				long sizetogo = UncompressedSize;
-
-				java.util.zip.CRC32 tcrc32 = new java.util.zip.CRC32();
-				MessageDigest tmd5 = MessageDigest.getInstance("MD5");
-				MessageDigest tsha1 = MessageDigest.getInstance("SHA-1");
+				final int Buffersize = 8 * 1024;
+				byte[] buffer = new byte[Buffersize];
+				long sizetogo = _uncompressedSize;
+				Checksum tcrc32 = new java.util.zip.CRC32();
 
 				// Pre load the first buffer0
 				int sizeNext = sizetogo > Buffersize ? Buffersize : (int) sizetogo;
-				int sizebuffer = sInput.read(_buffer0, 0, sizeNext);
+				int sizebuffer = sInput.read(buffer, 0, sizeNext);
 				sizetogo -= sizebuffer;
 
 				while(sizebuffer > 0)
@@ -741,13 +724,11 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 
 					if(sizeNext > 0)
 					{
-						sizebuffer = sInput.read(_buffer0, 0, sizeNext);
+						sizebuffer = sInput.read(buffer, 0, sizeNext);
 
 						if(sizebuffer > 0)
 						{
-							tcrc32.update(_buffer0, 0, sizebuffer);
-							tmd5.update(_buffer0, 0, sizebuffer);
-							tsha1.update(_buffer0, 0, sizebuffer);
+							tcrc32.update(buffer, 0, sizebuffer);
 							sizetogo -= sizebuffer;
 						}
 					}
@@ -755,45 +736,43 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 
 				if(sizetogo > 0)
 				{
-					FileStatus = ZipReturn.ZipDecodeError;
+					fileStatus = ZipReturn.ZipDecodeError;
 					return;
 				}
 
-				byte[] testcrc = ByteBuffer.allocate(4).putInt((int) tcrc32.getValue()).array();
-				md5 = tmd5.digest();
-				sha1 = tsha1.digest();
+				byte[] testcrc = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt((int) tcrc32.getValue()).array();
 
-				FileStatus = Arrays.equals(CRC, testcrc) ? ZipReturn.ZipGood : ZipReturn.ZipCRCDecodeError;
+				fileStatus = Arrays.equals(crc, testcrc) ? ZipReturn.ZipGood : ZipReturn.ZipCRCDecodeError;
 			}
 			catch(Exception e)
 			{
-				FileStatus = ZipReturn.ZipDecodeError;
+				fileStatus = ZipReturn.ZipDecodeError;
 			}
 		}
 
-		public void LocalFileAddDirectory() throws IOException
+		public final void LocalFileAddDirectory() throws IOException
 		{
 			esbc.put((byte) 3);
 			esbc.put((byte) 0);
 		}
 
-		public long LocalFilePos()
+		public final long LocalFilePos()
 		{
-			return RelativeOffsetOfLocalHeader;
+			return relativeOffsetOfLocalHeader;
 		}
 
-		public void LocalFilePos(long value)
+		public final void LocalFilePos(long value)
 		{
-			RelativeOffsetOfLocalHeader = value;
+			relativeOffsetOfLocalHeader = value;
 		}
 
-		private byte[] ReadCRC(EnhancedSeekableByteChannel esbc) throws IOException
+		private final byte[] ReadCRC(EnhancedSeekableByteChannel esbc) throws IOException
 		{
 			return ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(esbc.getInt()).array();
 		}
 
 		@Override
-		public void close() throws IOException
+		public final void close() throws IOException
 		{
 			if(this.esbc != null)
 				this.esbc.close();
@@ -801,12 +780,14 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 
 	}
 
-	public String ZipFilename()
+	private File _zipFileInfo = null;
+
+	public final String ZipFilename()
 	{
 		return _zipFileInfo != null ? _zipFileInfo.getAbsolutePath() : "";
 	}
 
-	public long TimeStamp()
+	public final long TimeStamp()
 	{
 		return _zipFileInfo != null ? _zipFileInfo.lastModified() : 0;
 	}
@@ -823,60 +804,50 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 
 	private EnumSet<ZipStatus> _pZipStatus = EnumSet.noneOf(ZipStatus.class);
 	private boolean _zip64;
-	private ZipOpenType ZipOpen = ZipOpenType.Closed;
+	private ZipOpenType zipOpen = ZipOpenType.Closed;
 
-	public ZipOpenType ZipOpen()
+	public final ZipOpenType ZipOpen()
 	{
-		return ZipOpen;
+		return zipOpen;
 	}
 
-	public EnumSet<ZipStatus> ZipStatus()
+	public final EnumSet<ZipStatus> ZipStatus()
 	{
 		return _pZipStatus;
 	}
 
-	public int LocalFilesCount()
+	public final int LocalFilesCount()
 	{
 		return _localFiles.size();
 	}
 
-	public String Filename(int i)
+	public final String Filename(int i)
 	{
-		return _localFiles.get(i).FileName;
+		return _localFiles.get(i).fileName;
 	}
 
-	public long UncompressedSize(int i)
+	public final long UncompressedSize(int i)
 	{
-		return _localFiles.get(i).UncompressedSize;
+		return _localFiles.get(i)._uncompressedSize;
 	}
 
-	public Long LocalHeader(int i)
+	public final Long LocalHeader(int i)
 	{
-		return ((_localFiles.get(i)._generalPurposeBitFlag & 8) == 0) ? (Long) _localFiles.get(i).RelativeOffsetOfLocalHeader : null;
+		return ((_localFiles.get(i)._generalPurposeBitFlag & 8) == 0) ? (Long) _localFiles.get(i).relativeOffsetOfLocalHeader : null;
 	}
 
-	public ZipReturn FileStatus(int i)
+	public final ZipReturn FileStatus(int i)
 	{
-		return _localFiles.get(i).FileStatus;
+		return _localFiles.get(i).fileStatus;
 	}
 
-	public byte[] CRC32(int i)
+	public final byte[] CRC32(int i)
 	{
-		return _localFiles.get(i).CRC;
-	}
-
-	public byte[] MD5(int i)
-	{
-		return _localFiles.get(i).md5;
-	}
-
-	public byte[] SHA1(int i)
-	{
-		return _localFiles.get(i).sha1;
+		return _localFiles.get(i).crc;
 	}
 
 	@Override
-	public void close()
+	public final void close()
 	{
 		if(_esbc != null)
 		{
@@ -891,10 +862,10 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 		}
 	}
 
-	private ZipReturn FindEndOfCentralDirSignature() throws IOException
+	private final ZipReturn FindEndOfCentralDirSignature() throws IOException
 	{
 		long fileSize = _esbc.size();
-		System.out.println("fileSize:" + fileSize);
+
 		long maxBackSearch = 0xffff;
 
 		if(_esbc.size() < maxBackSearch)
@@ -913,13 +884,8 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 
 			long readSize = backPosition > (buffSize + 4) ? (buffSize + 4) : backPosition;
 
-			System.out.println("readSize:" + readSize);
-			System.out.println("backPosition:" + backPosition);
-
 			_esbc.position(fileSize - backPosition);
-			System.out.println("seek(fileSize - backPosition):" + (fileSize - backPosition));
 
-			System.out.println("get(buffer,0,readsize):" + buffer.length + "," + readSize);
 			_esbc.get(buffer, 0, (int) readSize);
 
 			for(int i = (int) readSize - 4; i >= 0; i--)
@@ -934,30 +900,25 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 		return ZipReturn.ZipCentralDirError;
 	}
 
-	private ZipReturn EndOfCentralDirRead() throws IOException
+	private final ZipReturn EndOfCentralDirRead() throws IOException
 	{
 		long thisSignature = _esbc.getInt();
 		if(thisSignature != EndOfCentralDirSignature)
 			return ZipReturn.ZipEndOfCentralDirectoryError;
-		System.out.println("Good Signature");
 
 		int tushort = _esbc.getShort(); // NumberOfThisDisk
 		if(tushort != 0)
 			return ZipReturn.ZipEndOfCentralDirectoryError;
-		System.out.println("NumberOfThisDisk:"+tushort);
 
 		tushort = _esbc.getShort(); // NumberOfThisDiskCenterDir
 		if(tushort != 0)
 			return ZipReturn.ZipEndOfCentralDirectoryError;
-		System.out.println("NumberOfThisDiskCenterDir:"+tushort);
 
 		_localFilesCount = _esbc.getShort(); // TotalNumberOfEnteriesDisk
-		System.out.println("TotalNumberOfEnteriesDisk:"+_localFilesCount);
 
 		tushort = _esbc.getShort(); // TotalNumber of enteries in the central directory
 		if(tushort != _localFilesCount)
 			return ZipReturn.ZipEndOfCentralDirectoryError;
-		System.out.println("TotalNumber of enteries in the central directory:"+tushort);
 
 		_centerDirSize = _esbc.getInt(); // SizeOfCenteralDir
 		_centerDirStart = _esbc.getInt(); // Offset
@@ -969,12 +930,11 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 
 		if(_esbc.position() != _esbc.size())
 			_pZipStatus.add(ZipStatus.ExtraData);
-		
-		System.out.println("ZipGood");
+
 		return ZipReturn.ZipGood;
 	}
 
-	private void EndOfCentralDirWrite() throws IOException
+	private final void EndOfCentralDirWrite() throws IOException
 	{
 		_esbc.putInt(EndOfCentralDirSignature);
 		_esbc.putShort((short) 0); // NumberOfThisDisk
@@ -987,7 +947,7 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 		_esbc.put(_fileComment, 0, _fileComment.length);
 	}
 
-	private ZipReturn Zip64EndOfCentralDirRead() throws IOException
+	private final ZipReturn Zip64EndOfCentralDirRead() throws IOException
 	{
 		_zip64 = true;
 
@@ -1026,7 +986,7 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 		return ZipReturn.ZipGood;
 	}
 
-	private void Zip64EndOfCentralDirWrite() throws IOException
+	private final void Zip64EndOfCentralDirWrite() throws IOException
 	{
 		_esbc.putInt(Zip64EndOfCentralDirSignature);
 		_esbc.putLong(44L); // Size of zip64 end of central directory record
@@ -1040,7 +1000,7 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 		_esbc.putLong(_centerDirStart); // offset of start of central directory with respect to the starting disk number
 	}
 
-	private ZipReturn Zip64EndOfCentralDirectoryLocatorRead() throws IOException
+	private final ZipReturn Zip64EndOfCentralDirectoryLocatorRead() throws IOException
 	{
 		_zip64 = true;
 
@@ -1061,7 +1021,7 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 		return ZipReturn.ZipGood;
 	}
 
-	private void Zip64EndOfCentralDirectoryLocatorWrite() throws IOException
+	private final void Zip64EndOfCentralDirectoryLocatorWrite() throws IOException
 	{
 		_esbc.putInt(Zip64EndOfCentralDirectoryLocator);
 		_esbc.putInt(0); // number of the disk with the start of the zip64 end of centeral directory
@@ -1069,7 +1029,7 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 		_esbc.putInt(1); // total number of disks
 	}
 
-	public ZipReturn ZipFileOpen(File newFilename, long timestamp, boolean readHeaders) throws IOException
+	public final ZipReturn ZipFileOpen(File newFilename, long timestamp, boolean readHeaders) throws IOException
 	{
 		ZipFileClose();
 		_pZipStatus = EnumSet.noneOf(ZipStatus.class);
@@ -1098,7 +1058,7 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 			ZipFileClose();
 			return ZipReturn.ZipErrorOpeningFile;
 		}
-		ZipOpen = ZipOpenType.OpenRead;
+		zipOpen = ZipOpenType.OpenRead;
 
 		if(!readHeaders)
 			return ZipReturn.ZipGood;
@@ -1120,7 +1080,6 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 				return zRet;
 			}
 
-			System.out.println("check if this is a ZIP64 zip and if it is read the Zip64 End Of Central Dir Info");
 			// check if this is a ZIP64 zip and if it is read the Zip64 End Of Central Dir Info
 			if(_centerDirStart == 0xffffffffL || _centerDirSize == 0xffffffffL || _localFilesCount == 0xffff)
 			{
@@ -1143,7 +1102,6 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 
 			boolean trrntzip = false;
 
-			System.out.println("check if the ZIP has a valid TorrentZip file comment");
 			// check if the ZIP has a valid TorrentZip file comment
 			if(_fileComment.length == 22)
 			{
@@ -1162,11 +1120,7 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 
 				}
 			}
-			if(trrntzip)
-				System.out.println("valid torrentzip");
 
-			
-			System.out.println("now read the central directory at "+_centerDirStart);
 			// now read the central directory
 			_esbc.position(_centerDirStart);
 
@@ -1181,10 +1135,9 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 					lc.close();
 					return zRet;
 				}
-				_zip64 |= lc.Zip64;
+				_zip64 |= lc.zip64;
 				_localFiles.add(lc);
 			}
-			System.out.println("_localFiles size:"+_localFiles.size());
 
 			for(int i = 0; i < _localFilesCount; i++)
 			{
@@ -1194,33 +1147,30 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 					ZipFileClose();
 					return zRet;
 				}
-				trrntzip &= _localFiles.get(i).TrrntZip;
+				trrntzip &= _localFiles.get(i)._trrntZip;
 			}
 
 			// check trrntzip file order
 			if(trrntzip)
 				for(int i = 0; i < _localFilesCount - 1; i++)
 				{
-					if(_localFiles.get(i).FileName.compareToIgnoreCase(_localFiles.get(i + 1).FileName) < 0)
+					if(_localFiles.get(i).fileName.compareToIgnoreCase(_localFiles.get(i + 1).fileName) < 0)
 						continue;
 					trrntzip = false;
 					break;
 				}
 
-			if(!trrntzip)
-				System.out.println("trrntzip file order failed");
-			
 			// check trrntzip directories
 			if(trrntzip)
 				for(int i = 0; i < _localFilesCount - 1; i++)
 				{
 					// see if we found a directory
-					String filename0 = _localFiles.get(i).FileName;
+					String filename0 = _localFiles.get(i).fileName;
 					if(!filename0.endsWith("/"))
 						continue;
 
 					// see if the next file is in that directory
-					String filename1 = _localFiles.get(i + 1).FileName;
+					String filename1 = _localFiles.get(i + 1).fileName;
 					if(filename1.length() <= filename0.length())
 						continue;
 					if(filename0.compareToIgnoreCase(filename1.substring(0, filename0.length())) != 0)
@@ -1231,13 +1181,6 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 					break;
 				}
 
-			if(!trrntzip)
-				System.out.println("check trrntzip directories failed");
-			
-			
-			if(trrntzip)
-				System.out.println("trrnzip OK");
-			
 			if(trrntzip)
 				_pZipStatus.add(ZipStatus.TrrntZip);
 
@@ -1252,33 +1195,28 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 
 	}
 
-	public ZipReturn ZipFileCreate(File newFilename) throws IOException
+	public final ZipReturn ZipFileCreate(File newFilename) throws IOException
 	{
-		if(ZipOpen != ZipOpenType.Closed)
+		if(zipOpen != ZipOpenType.Closed)
 			return ZipReturn.ZipFileAlreadyOpen;
 
 		CreateDirForFile(newFilename);
 		_zipFileInfo = newFilename;
 
 		_esbc = new EnhancedSeekableByteChannel(Files.newByteChannel(newFilename.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.READ), ByteOrder.LITTLE_ENDIAN);
-		ZipOpen = ZipOpenType.OpenWrite;
+		zipOpen = ZipOpenType.OpenWrite;
 		return ZipReturn.ZipGood;
 	}
 
-	public void ZipFileClose() throws IOException
+	public final void ZipFileClose() throws IOException
 	{
-		if(ZipOpen == ZipOpenType.Closed)
-		{
+		if(zipOpen == ZipOpenType.Closed)
 			return;
-		}
 
-		if(ZipOpen == ZipOpenType.OpenRead)
+		if(zipOpen == ZipOpenType.OpenRead)
 		{
-			if(_esbc != null)
-			{
-				_esbc.close();
-			}
-			ZipOpen = ZipOpenType.Closed;
+			close();
+			zipOpen = ZipOpenType.Closed;
 			return;
 		}
 
@@ -1293,8 +1231,8 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 		for(LocalFile t : _localFiles)
 		{
 			t.CenteralDirectoryWrite(_esbc);
-			_zip64 |= t.Zip64;
-			lTrrntzip &= t.TrrntZip;
+			_zip64 |= t.zip64;
+			lTrrntzip &= t._trrntZip;
 		}
 
 		_centerDirSize = _esbc.position() - _centerDirStart;
@@ -1312,42 +1250,37 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 
 		_esbc.truncate(_esbc.position());
 		close();
-		ZipOpen = ZipOpenType.Closed;
+		zipOpen = ZipOpenType.Closed;
 
 	}
 
-	public void ZipFileCloseFailed() throws IOException
+	public final void ZipFileCloseFailed() throws IOException
 	{
-		if(ZipOpen == ZipOpenType.Closed)
+		if(zipOpen == ZipOpenType.Closed)
+			return;
+
+		if(zipOpen == ZipOpenType.OpenRead)
 		{
+			close();
+			zipOpen = ZipOpenType.Closed;
 			return;
 		}
 
-		if(ZipOpen == ZipOpenType.OpenRead)
-		{
-			if(_esbc != null)
-			{
-				_esbc.close();
-			}
-			ZipOpen = ZipOpenType.Closed;
-			return;
-		}
-
-		_esbc.close();
+		close();
 		_zipFileInfo.delete();
 		_zipFileInfo = null;
-		ZipOpen = ZipOpenType.Closed;
+		zipOpen = ZipOpenType.Closed;
 	}
 
 	private int _readIndex;
 
-	public ZipReturn ZipFileOpenReadStream(int index, boolean raw, AtomicReference<InputStream> stream, AtomicLong streamSize, AtomicInteger compressionMethod) throws IOException
+	public final ZipReturn ZipFileOpenReadStream(int index, boolean raw, AtomicReference<InputStream> stream, AtomicLong streamSize, AtomicInteger compressionMethod) throws IOException
 	{
 		streamSize.set(0);
 		compressionMethod.set(0);
 		_readIndex = index;
 		stream.set(null);
-		if(ZipOpen != ZipOpenType.OpenRead)
+		if(zipOpen != ZipOpenType.OpenRead)
 			return ZipReturn.ZipReadingFromOutputFile;
 
 		ZipReturn zRet = _localFiles.get(index).LocalFileHeaderRead();
@@ -1360,14 +1293,11 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 		return _localFiles.get(index).LocalFileOpenReadStream(raw, stream, streamSize, compressionMethod);
 	}
 
-	public ZipReturn ZipFileOpenReadStreamQuick(long pos, boolean raw, AtomicReference<InputStream> stream, AtomicLong streamSize, AtomicInteger compressionMethod) throws IOException
+	public final ZipReturn ZipFileOpenReadStreamQuick(long pos, boolean raw, AtomicReference<InputStream> stream, AtomicLong streamSize, AtomicInteger compressionMethod) throws IOException
 	{
-		LocalFile tmpFile = new LocalFile(_esbc)
-		{
-			{
-				LocalFilePos(pos);
-			}
-		};
+		LocalFile tmpFile = new LocalFile(_esbc);
+		tmpFile.LocalFilePos(pos);
+
 		_localFiles.clear();
 		_localFiles.add(tmpFile);
 		ZipReturn zr = tmpFile.LocalFileHeaderReadQuick();
@@ -1383,15 +1313,15 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 		return tmpFile.LocalFileOpenReadStream(raw, stream, streamSize, compressionMethod);
 	}
 
-	public ZipReturn ZipFileCloseReadStream() throws IOException
+	public final ZipReturn ZipFileCloseReadStream() throws IOException
 	{
 		return _localFiles.get(_readIndex).LocalFileCloseReadStream();
 	}
 
-	public ZipReturn ZipFileOpenWriteStream(boolean raw, boolean trrntzip, String filename, long uncompressedSize, short compressionMethod, AtomicReference<OutputStream> stream) throws IOException
+	public final ZipReturn ZipFileOpenWriteStream(boolean raw, boolean trrntzip, String filename, long uncompressedSize, short compressionMethod, AtomicReference<OutputStream> stream) throws IOException
 	{
 		stream.set(null);
-		if(ZipOpen != ZipOpenType.OpenWrite)
+		if(zipOpen != ZipOpenType.OpenWrite)
 			return ZipReturn.ZipWritingToInputFile;
 
 		LocalFile lf = new LocalFile(_esbc, filename);
@@ -1403,14 +1333,14 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 		return retVal;
 	}
 
-	public ZipReturn ZipFileCloseWriteStream(byte[] crc32) throws IOException
+	public final ZipReturn ZipFileCloseWriteStream(byte[] crc32) throws IOException
 	{
 		return _localFiles.get(_localFiles.size() - 1).LocalFileCloseWriteStream(crc32);
 	}
 
-	public ZipReturn ZipFileRollBack() throws IOException
+	public final ZipReturn ZipFileRollBack() throws IOException
 	{
-		if(ZipOpen != ZipOpenType.OpenWrite)
+		if(zipOpen != ZipOpenType.OpenWrite)
 			return ZipReturn.ZipWritingToInputFile;
 
 		int fileCount = _localFiles.size();
@@ -1424,7 +1354,7 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 		return ZipReturn.ZipGood;
 	}
 
-	public void ZipFileAddDirectory() throws IOException
+	public final void ZipFileAddDirectory() throws IOException
 	{
 		_localFiles.get(_localFiles.size() - 1).LocalFileAddDirectory();
 	}
@@ -1437,18 +1367,18 @@ public class ZipFile implements ICompress, AutoCloseable, Closeable
 	 * zipBr.Close(); _zipFs.Flush(); _zipFs.Close(); }
 	 */
 
-	public void DeepScan()
+	public final void DeepScan()
 	{
 		for(LocalFile lfile : _localFiles)
 			lfile.LocalFileCheck();
 	}
 
-	private static void CreateDirForFile(File sFilename)
+	private final static void CreateDirForFile(File sFilename)
 	{
 		sFilename.getParentFile().mkdirs();
 	}
 
-	public static String ZipErrorMessageText(ZipReturn zS)
+	public final static String ZipErrorMessageText(ZipReturn zS)
 	{
 		String ret = "Unknown";
 		switch(zS)

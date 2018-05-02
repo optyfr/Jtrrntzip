@@ -1,6 +1,7 @@
 package JTrrntzip;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,18 +15,22 @@ import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.DeflaterOutputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import JTrrntzip.SupportedFiles.ICompress;
 import JTrrntzip.SupportedFiles.SevenZip.SevenZ;
 import JTrrntzip.SupportedFiles.ZipFile.ZipFile;
 
-public class TorrentZipRebuild
+public final class TorrentZipRebuild
 {
 
-	public static TrrntZipStatus ReZipFiles(List<ZippedFile> zippedFiles, ICompress originalZipFile, byte[] buffer, StatusCallback StatusCallBack, LogCallback LogCallback, int ThreadID)
+	public final static TrrntZipStatus ReZipFiles(List<ZippedFile> zippedFiles, ICompress originalZipFile, byte[] buffer, LogCallback LogCallback)
 	{
 		int bufferSize = buffer.length;
+
+		long start = System.currentTimeMillis();
 
 		File filename = new File(originalZipFile.ZipFilename());
 		File tmpFilename = new File(filename.getParentFile(), FilenameUtils.getBaseName(filename.getName()) + ".tmp");
@@ -35,7 +40,7 @@ public class TorrentZipRebuild
 		{
 			if(outfilename.exists())
 			{
-				LogCallback.StatusLogCallBack(ThreadID, "Error output .zip file already exists");
+				LogCallback.StatusLogCallBack("Error output .zip file already exists");
 				return TrrntZipStatus.RepeatFilesFound;
 			}
 
@@ -53,12 +58,12 @@ public class TorrentZipRebuild
 			// by now the zippedFiles have been sorted so just loop over them
 			for(int i = 0; i < zippedFiles.size(); i++)
 			{
-				StatusCallBack.StatusCallBack(ThreadID, (int) ((double) (i + 1) / (zippedFiles.size()) * 100));
+				LogCallback.StatusCallBack((int) ((double) (i + 1) / (zippedFiles.size()) * 100));
 
 				ZippedFile t = zippedFiles.get(i);
 
-				if(Program.VerboseLogging)
-					LogCallback.StatusLogCallBack(ThreadID, String.format("%15s %s %s", t.Size, t.toString(), t.Name));
+				if(LogCallback.isVerboseLogging())
+					LogCallback.StatusLogCallBack(String.format("%15s %s %s", t.Size, t.toString(), t.Name));
 
 				AtomicReference<InputStream> readStream = new AtomicReference<>();
 				AtomicLong streamSize = new AtomicLong();
@@ -80,7 +85,7 @@ public class TorrentZipRebuild
 				}
 
 				AtomicReference<OutputStream> writeStream = new AtomicReference<>();
-				ZipReturn zrOutput = zipFileOut.ZipFileOpenWriteStream(false, true, t.Name, streamSize.get(), (short)8, writeStream);
+				ZipReturn zrOutput = zipFileOut.ZipFileOpenWriteStream(false, true, t.Name, streamSize.get(), (short) 8, writeStream);
 
 				if(zrInput != ZipReturn.ZipGood || zrOutput != ZipReturn.ZipGood)
 				{
@@ -94,6 +99,7 @@ public class TorrentZipRebuild
 
 				CheckedInputStream crcCs = new CheckedInputStream(readStream.get(), new CRC32());
 				BufferedInputStream bcrcCs = new BufferedInputStream(crcCs, buffer.length);
+				BufferedOutputStream bWriteStream = new BufferedOutputStream(writeStream.get(), buffer.length);
 
 				long sizetogo = streamSize.get();
 				while(sizetogo > 0)
@@ -101,20 +107,19 @@ public class TorrentZipRebuild
 					int sizenow = sizetogo > (long) bufferSize ? bufferSize : (int) sizetogo;
 
 					bcrcCs.read(buffer, 0, sizenow);
-					writeStream.get().write(buffer, 0, sizenow);
+					bWriteStream.write(buffer, 0, sizenow);
 					sizetogo = sizetogo - (long) sizenow;
 				}
+				bWriteStream.flush();
 				if(writeStream.get() instanceof DeflaterOutputStream)
-					((DeflaterOutputStream)writeStream.get()).finish();
+					((DeflaterOutputStream) writeStream.get()).finish();
 
-				// crcCs.close();
 				if(z != null)
 					originalZipFile.ZipFileCloseReadStream();
 
 				long crc = crcCs.getChecksum().getValue();
-				System.out.println(Long.toHexString(crc)+"<=>"+Integer.toHexString(t.CRC));
 
-				if((int)crc != t.CRC)
+				if((int) crc != t.CRC)
 					return TrrntZipStatus.CorruptZip;
 
 				zipFileOut.ZipFileCloseWriteStream(t.getCRC());
@@ -124,8 +129,10 @@ public class TorrentZipRebuild
 			zipFileOut.close();
 			originalZipFile.ZipFileClose();
 			originalZipFile.close();
-		//	filename.delete();
-		//	FileUtils.moveFile(tmpFilename, outfilename);
+			filename.delete();
+			FileUtils.moveFile(tmpFilename, outfilename);
+			System.out.println();
+			System.out.println(DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - start));
 			return TrrntZipStatus.ValidTrrntzip;
 
 		}

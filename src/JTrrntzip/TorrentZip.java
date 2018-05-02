@@ -13,25 +13,26 @@ import JTrrntzip.SupportedFiles.ICompress;
 import JTrrntzip.SupportedFiles.SevenZip.SevenZ;
 import JTrrntzip.SupportedFiles.ZipFile.ZipFile;
 
-public class TorrentZip
+public final class TorrentZip
 {
-	public StatusCallback StatusCallBack;
-	public LogCallback StatusLogCallBack;
-	public int ThreadID;
+	private LogCallback statusLogCallBack;
+	private TorrentZipOptions options;
 
-	private byte[] _buffer;
+	private byte[] buffer;
 
-	public TorrentZip()
+	public TorrentZip(LogCallback statusLogCallBack, TorrentZipOptions options)
 	{
-		_buffer = new byte[1024 * 1024];
+		this.statusLogCallBack = statusLogCallBack;
+		this.options = options;
+		this.buffer = new byte[8 * 1024];
 	}
 
-	public TrrntZipStatus Process(File f) throws IOException
+	public final TrrntZipStatus Process(File f) throws IOException
 	{
-		if(Program.VerboseLogging)
-			StatusLogCallBack.StatusLogCallBack(ThreadID, "");
-
-		StatusLogCallBack.StatusLogCallBack(ThreadID, f.getName() + " - ");
+		if(statusLogCallBack.isVerboseLogging())
+			statusLogCallBack.StatusLogCallBack("");
+		
+		statusLogCallBack.StatusLogCallBack(f.getName() + " - ");
 
 		// First open the zip (7z) file, and fail out if it is corrupt.
 
@@ -41,7 +42,7 @@ public class TorrentZip
 
 		if(tzs.contains(TrrntZipStatus.CorruptZip))
 		{
-			StatusLogCallBack.StatusLogCallBack(ThreadID, "Zip file is corrupt");
+			statusLogCallBack.StatusLogCallBack("Zip file is corrupt");
 			return TrrntZipStatus.CorruptZip;
 		}
 
@@ -49,23 +50,21 @@ public class TorrentZip
 		// is actually valid, and may invalidate it being a valid trrntzip if any problem is found.
 
 		List<ZippedFile> zippedFiles = ReadZipContent(zipFile.get());
-		tzs.addAll(TorrentZipCheck.CheckZipFiles(zippedFiles));
+		tzs.addAll(TorrentZipCheck.CheckZipFiles(zippedFiles,statusLogCallBack));
 
 		// if tza is now just 'ValidTrrntzip' the it is fully valid, and nothing needs to be done to it.
 
-		System.out.println(tzs);
-		if(tzs.contains(TrrntZipStatus.ValidTrrntzip) && !Program.ForceReZip || Program.CheckOnly)
+		if(tzs.contains(TrrntZipStatus.ValidTrrntzip) && !options.isForceRezip() || options.isCheckOnly())
 		{
-			StatusLogCallBack.StatusLogCallBack(ThreadID, "Skipping File");
+			statusLogCallBack.StatusLogCallBack("Skipping File");
 			return TrrntZipStatus.ValidTrrntzip;
 		}
-		System.out.println(Program.CheckOnly);
-		StatusLogCallBack.StatusLogCallBack(ThreadID, "TorrentZipping");
-		TrrntZipStatus fixedTzs = TorrentZipRebuild.ReZipFiles(zippedFiles, zipFile.get(), _buffer, StatusCallBack, StatusLogCallBack, ThreadID);
+		statusLogCallBack.StatusLogCallBack("TorrentZipping");
+		TrrntZipStatus fixedTzs = TorrentZipRebuild.ReZipFiles(zippedFiles, zipFile.get(), buffer, statusLogCallBack);
 		return fixedTzs;
 	}
 
-	private EnumSet<TrrntZipStatus> OpenZip(File f, AtomicReference<ICompress> zipFile) throws IOException
+	private final EnumSet<TrrntZipStatus> OpenZip(File f, AtomicReference<ICompress> zipFile) throws IOException
 	{
 		String ext = FilenameUtils.getExtension(f.getName());
 		if(ext.equalsIgnoreCase("7z"))
@@ -86,7 +85,7 @@ public class TorrentZip
 		return tzStatus;
 	}
 
-	private List<ZippedFile> ReadZipContent(ICompress zipFile)
+	private final List<ZippedFile> ReadZipContent(ICompress zipFile)
 	{
 		List<ZippedFile> zippedFiles = new ArrayList<ZippedFile>();
 		for(int i = 0; i < zipFile.LocalFilesCount(); i++)

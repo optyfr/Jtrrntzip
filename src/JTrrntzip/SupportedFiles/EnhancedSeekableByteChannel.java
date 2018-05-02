@@ -11,15 +11,15 @@ import java.nio.channels.SeekableByteChannel;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
-public class EnhancedSeekableByteChannel implements SeekableByteChannel, Closeable, AutoCloseable
+public final class EnhancedSeekableByteChannel implements SeekableByteChannel, Closeable, AutoCloseable
 {
 	private SeekableByteChannel sbc;
 	private ByteOrder bo;
 	private Checksum checksum = null;
 
-	ByteBuffer lbb = ByteBuffer.allocate(8);
-	ByteBuffer ibb = ByteBuffer.allocate(4);
-	ByteBuffer sbb = ByteBuffer.allocate(2);
+	private final ByteBuffer lbb = ByteBuffer.allocate(8);
+	private final ByteBuffer ibb = ByteBuffer.allocate(4);
+	private final ByteBuffer sbb = ByteBuffer.allocate(2);
 	
 	public EnhancedSeekableByteChannel(SeekableByteChannel sbc, ByteOrder bo)
 	{
@@ -36,12 +36,12 @@ public class EnhancedSeekableByteChannel implements SeekableByteChannel, Closeab
 		return this;
 	}
 
-	public ByteOrder order()
+	public final ByteOrder order()
 	{
 		return bo;
 	}
 
-	public EnhancedSeekableByteChannel put(byte b) throws IOException
+	public final EnhancedSeekableByteChannel put(byte b) throws IOException
 	{
 		if(checksum!=null)
 			checksum.update(b);
@@ -49,7 +49,7 @@ public class EnhancedSeekableByteChannel implements SeekableByteChannel, Closeab
 		return this;
 	}
 
-	public EnhancedSeekableByteChannel put(byte[] b) throws IOException
+	public final EnhancedSeekableByteChannel put(byte[] b) throws IOException
 	{
 		if(checksum!=null)
 			checksum.update(b,0,b.length);
@@ -57,7 +57,7 @@ public class EnhancedSeekableByteChannel implements SeekableByteChannel, Closeab
 		return this;
 	}
 
-	public EnhancedSeekableByteChannel put(byte[] b, int offset, int len) throws IOException
+	public final EnhancedSeekableByteChannel put(byte[] b, int offset, int len) throws IOException
 	{
 		if(checksum!=null)
 			checksum.update(b,offset,len);
@@ -65,7 +65,7 @@ public class EnhancedSeekableByteChannel implements SeekableByteChannel, Closeab
 		return this;
 	}
 
-	public EnhancedSeekableByteChannel putLong(long l) throws IOException
+	public final EnhancedSeekableByteChannel putLong(long l) throws IOException
 	{
 		if(checksum!=null)
 			checksum.update(ByteBuffer.allocate(8).putLong(l).array(),0,8);
@@ -78,7 +78,7 @@ public class EnhancedSeekableByteChannel implements SeekableByteChannel, Closeab
 		return this;
 	}
 
-	public EnhancedSeekableByteChannel putInt(int i) throws IOException
+	public final EnhancedSeekableByteChannel putInt(int i) throws IOException
 	{
 		ibb.clear();
 		ibb.putInt(i);
@@ -89,7 +89,7 @@ public class EnhancedSeekableByteChannel implements SeekableByteChannel, Closeab
 		return this;
 	}
 
-	public EnhancedSeekableByteChannel putShort(short s) throws IOException
+	public final EnhancedSeekableByteChannel putShort(short s) throws IOException
 	{
 		sbb.clear();
 		sbb.putShort(s);
@@ -100,7 +100,7 @@ public class EnhancedSeekableByteChannel implements SeekableByteChannel, Closeab
 		return this;
 	}
 
-	public byte get() throws IOException
+	public final byte get() throws IOException
 	{
 		ByteBuffer bb = ByteBuffer.allocate(1);
 		read(bb);
@@ -109,7 +109,7 @@ public class EnhancedSeekableByteChannel implements SeekableByteChannel, Closeab
 		return bb.get();
 	}
 
-	public EnhancedSeekableByteChannel get(byte[] dst) throws IOException
+	public final EnhancedSeekableByteChannel get(byte[] dst) throws IOException
 	{
 		ByteBuffer bb = ByteBuffer.allocate(dst.length);
 		read(bb);
@@ -120,7 +120,7 @@ public class EnhancedSeekableByteChannel implements SeekableByteChannel, Closeab
 		return this;
 	}
 
-	public EnhancedSeekableByteChannel get(byte[] dst, int offset, int len) throws IOException
+	public final EnhancedSeekableByteChannel get(byte[] dst, int offset, int len) throws IOException
 	{
 		ByteBuffer bb = ByteBuffer.allocate(len);
 		read(bb);
@@ -131,7 +131,7 @@ public class EnhancedSeekableByteChannel implements SeekableByteChannel, Closeab
 		return this;
 	}
 
-	public long getLong() throws IOException
+	public final long getLong() throws IOException
 	{
 		lbb.clear();
 		read(lbb);
@@ -141,7 +141,7 @@ public class EnhancedSeekableByteChannel implements SeekableByteChannel, Closeab
 		return lbb.getLong();
 	}
 
-	public int getInt() throws IOException
+	public final int getInt() throws IOException
 	{
 		ibb.clear();
 		read(ibb);
@@ -151,7 +151,7 @@ public class EnhancedSeekableByteChannel implements SeekableByteChannel, Closeab
 		return ibb.getInt();
 	}
 
-	public short getShort() throws IOException
+	public final short getShort() throws IOException
 	{
 		sbb.clear();
 		read(sbb);
@@ -161,70 +161,70 @@ public class EnhancedSeekableByteChannel implements SeekableByteChannel, Closeab
 		return sbb.getShort();
 	}
 
-	public InputStream getInputStream()
+	public final InputStream getInputStream()
 	{
 		return Channels.newInputStream(sbc);
 	}
 
-	public OutputStream getOutputStream()
+	public final OutputStream getOutputStream()
 	{
 		return Channels.newOutputStream(sbc);
 	}
 
 	@Override
-	public boolean isOpen()
+	public final boolean isOpen()
 	{
 		return sbc.isOpen();
 	}
 
 	@Override
-	public void close() throws IOException
+	public final void close() throws IOException
 	{
 		sbc.close();
 	}
 
 	@Override
-	public int read(ByteBuffer dst) throws IOException
+	public final int read(ByteBuffer dst) throws IOException
 	{
 		return sbc.read(dst);
 	}
 
 	@Override
-	public int write(ByteBuffer src) throws IOException
+	public final int write(ByteBuffer src) throws IOException
 	{
 		return sbc.write(src);
 	}
 
 	@Override
-	public long position() throws IOException
+	public final long position() throws IOException
 	{
 		return sbc.position();
 	}
 
 	@Override
-	public SeekableByteChannel position(long newPosition) throws IOException
+	public final SeekableByteChannel position(long newPosition) throws IOException
 	{
 		return sbc.position(newPosition);
 	}
 
 	@Override
-	public long size() throws IOException
+	public final long size() throws IOException
 	{
 		return sbc.size();
 	}
 
 	@Override
-	public SeekableByteChannel truncate(long size) throws IOException
+	public final SeekableByteChannel truncate(long size) throws IOException
 	{
 		return sbc.truncate(size);
 	}
 
-	public void startChecksum()
+	public final void startChecksum()
 	{
 		checksum = new CRC32();
 	}
 
-	public long endChecksum()
+	public final long endChecksum()
 	{
 		return checksum.getValue();
 	}
