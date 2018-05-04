@@ -939,9 +939,9 @@ public final class ZipFile implements ICompress
 		_esbc.putUShort(0); // NumberOfThisDiskCenterDir
 		_esbc.putUShort((_localFiles.size() >= 0xffff ? 0xffff : _localFiles.size())); // TotalNumberOfEnteriesDisk
 		_esbc.putUShort((_localFiles.size() >= 0xffff ? 0xffff : _localFiles.size())); // TotalNumber of enteries in the central directory
-		_esbc.putUInt((int) (_centerDirSize.compareTo(BigInteger.valueOf(0xffffffffL)) >= 0 ? 0xffffffffL : _centerDirSize));
-		_esbc.putUInt((int) (_centerDirStart.compareTo(BigInteger.valueOf(0xffffffffL)) >= 0 ? 0xffffffffL : _centerDirStart));
-		_esbc.putUShort((short) _fileComment.length);
+		_esbc.putUInt((_centerDirSize.compareTo(BigInteger.valueOf(0xffffffffL)) >= 0 ? 0xffffffffL : _centerDirSize).longValue());
+		_esbc.putUInt((_centerDirStart.compareTo(BigInteger.valueOf(0xffffffffL)) >= 0 ? 0xffffffffL : _centerDirStart).longValue());
+		_esbc.putUShort(_fileComment.length);
 		_esbc.put(_fileComment, 0, _fileComment.length);
 	}
 
