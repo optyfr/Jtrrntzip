@@ -1112,7 +1112,7 @@ public final class ZipFile implements ICompress
 					long r = _esbc.endChecksum();
 
 					String tcrc = new String(_fileComment, Charset.forName("Cp437")).substring(14, 22);
-					String zcrc = Integer.toHexString((int) r);
+					String zcrc = String.format("08X", r);
 					if(tcrc.equalsIgnoreCase(zcrc))
 						trrntzip = true;
 
@@ -1235,7 +1235,7 @@ public final class ZipFile implements ICompress
 
 		_centerDirSize = BigInteger.valueOf(_esbc.position() - _centerDirStart.longValue());
 
-		_fileComment = lTrrntzip ? ("TORRENTZIPPED-" + Integer.toHexString((int) _esbc.endChecksum())).getBytes(Charset.forName("Cp437")) : new byte[0];
+		_fileComment = lTrrntzip ? String.format("TORRENTZIPPED-%08X", _esbc.endChecksum()).getBytes(Charset.forName("Cp437")) : new byte[0];
 		_pZipStatus = lTrrntzip ? EnumSet.of(ZipStatus.TrrntZip) : EnumSet.noneOf(ZipStatus.class);
 
 		if(_zip64)
