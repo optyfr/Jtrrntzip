@@ -1112,7 +1112,7 @@ public final class ZipFile implements ICompress
 					long r = _esbc.endChecksum();
 
 					String tcrc = new String(_fileComment, Charset.forName("Cp437")).substring(14, 22);
-					String zcrc = String.format("08X", r);
+					String zcrc = String.format("%08X", r);
 					if(tcrc.equalsIgnoreCase(zcrc))
 						trrntzip = true;
 
