@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -24,7 +25,7 @@ import JTrrntzip.SupportedFiles.ZipFile.ZipFile;
 public final class TorrentZipRebuild
 {
 
-	public final static TrrntZipStatus ReZipFiles(List<ZippedFile> zippedFiles, ICompress originalZipFile, byte[] buffer, LogCallback LogCallback)
+	public final static EnumSet<TrrntZipStatus> ReZipFiles(List<ZippedFile> zippedFiles, ICompress originalZipFile, byte[] buffer, LogCallback LogCallback)
 	{
 		int bufferSize = buffer.length;
 
@@ -75,7 +76,7 @@ public final class TorrentZipRebuild
 					zipFileOut.close();
 					originalZipFile.ZipFileClose();
 					tmpFilename.delete();
-					return TrrntZipStatus.CorruptZip;
+					return EnumSet.of(TrrntZipStatus.CorruptZip);
 				}
 
 				CheckedInputStream crcCs = new CheckedInputStream(readStream.get(), new CRC32());
@@ -101,7 +102,7 @@ public final class TorrentZipRebuild
 				long crc = crcCs.getChecksum().getValue();
 
 				if((int) crc != t.CRC)
-					return TrrntZipStatus.CorruptZip;
+					return EnumSet.of(TrrntZipStatus.CorruptZip);
 
 				zipFileOut.ZipFileCloseWriteStream(t.getCRC());
 			}
@@ -112,7 +113,7 @@ public final class TorrentZipRebuild
 			originalZipFile.close();
 			filename.delete();
 			FileUtils.moveFile(tmpFilename, outfilename);
-			return TrrntZipStatus.ValidTrrntzip;
+			return EnumSet.of(TrrntZipStatus.ValidTrrntzip);
 
 		}
 		catch(Throwable e)
@@ -140,7 +141,7 @@ public final class TorrentZipRebuild
 					e1.printStackTrace();
 				}
 			});
-			return TrrntZipStatus.CorruptZip;
+			return EnumSet.of(TrrntZipStatus.CorruptZip);
 		}
 
 	}

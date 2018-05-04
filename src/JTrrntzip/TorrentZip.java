@@ -24,7 +24,7 @@ public final class TorrentZip
 		this.buffer = new byte[8 * 1024];
 	}
 
-	public final TrrntZipStatus Process(File f) throws IOException
+	public final EnumSet<TrrntZipStatus> Process(File f) throws IOException
 	{
 		if(statusLogCallBack.isVerboseLogging())
 			statusLogCallBack.StatusLogCallBack("");
@@ -40,7 +40,7 @@ public final class TorrentZip
 		if(tzs.contains(TrrntZipStatus.CorruptZip))
 		{
 			statusLogCallBack.StatusLogCallBack("Zip file is corrupt");
-			return TrrntZipStatus.CorruptZip;
+			return tzs;
 		}
 
 		// the zip file may have found a valid trrntzip header, but we now check that all the file info
@@ -54,15 +54,15 @@ public final class TorrentZip
 		if(tzs.contains(TrrntZipStatus.ValidTrrntzip) && !options.isForceRezip())
 		{
 			statusLogCallBack.StatusLogCallBack("Skipping File");
-			return TrrntZipStatus.ValidTrrntzip;
+			return tzs;
 		}
 		if(options.isCheckOnly())
 		{
 			statusLogCallBack.StatusLogCallBack(tzs.toString());
-			return TrrntZipStatus.NotTrrntzipped;
+			return tzs;
 		}
 		statusLogCallBack.StatusLogCallBack("TorrentZipping");
-		TrrntZipStatus fixedTzs = TorrentZipRebuild.ReZipFiles(zippedFiles, zipFile.get(), buffer, statusLogCallBack);
+		EnumSet<TrrntZipStatus> fixedTzs = TorrentZipRebuild.ReZipFiles(zippedFiles, zipFile.get(), buffer, statusLogCallBack);
 		return fixedTzs;
 	}
 
