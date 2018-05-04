@@ -6,10 +6,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
@@ -53,7 +53,7 @@ public final class TorrentZipRebuild
 					LogCallback.StatusLogCallBack(String.format("%15s %s %s", t.Size, t.toString(), t.Name));
 
 				AtomicReference<InputStream> readStream = new AtomicReference<>();
-				AtomicLong streamSize = new AtomicLong();
+				AtomicReference<BigInteger> streamSize = new AtomicReference<>();
 				AtomicInteger compMethod = new AtomicInteger();
 
 				ZipReturn zrInput = ZipReturn.ZipUntested;
@@ -82,14 +82,14 @@ public final class TorrentZipRebuild
 				BufferedInputStream bcrcCs = new BufferedInputStream(crcCs, buffer.length);
 				BufferedOutputStream bWriteStream = new BufferedOutputStream(writeStream.get(), buffer.length);
 
-				long sizetogo = streamSize.get();
-				while(sizetogo > 0)
+				BigInteger sizetogo = streamSize.get();
+				while(sizetogo.compareTo(BigInteger.valueOf(0)) > 0)
 				{
-					int sizenow = sizetogo > (long) bufferSize ? bufferSize : (int) sizetogo;
+					int sizenow = sizetogo.compareTo(BigInteger.valueOf(bufferSize)) > 0 ? bufferSize : sizetogo.intValue();
 
 					bcrcCs.read(buffer, 0, sizenow);
 					bWriteStream.write(buffer, 0, sizenow);
-					sizetogo = sizetogo - (long) sizenow;
+					sizetogo = sizetogo.subtract(BigInteger.valueOf(sizenow));
 				}
 				bWriteStream.flush();
 				if(writeStream.get() instanceof DeflaterOutputStream)

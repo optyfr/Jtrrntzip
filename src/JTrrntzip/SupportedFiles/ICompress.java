@@ -4,6 +4,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -17,9 +18,9 @@ public interface ICompress extends Closeable, AutoCloseable
 
 	String Filename(int i);
 
-	Long LocalHeader(int i);
+	BigInteger LocalHeader(int i);
 
-	long UncompressedSize(int i);
+	BigInteger UncompressedSize(int i);
 
 	byte[] CRC32(int i);
 
@@ -31,7 +32,7 @@ public interface ICompress extends Closeable, AutoCloseable
 
 	void ZipFileClose() throws IOException;
 
-	ZipReturn ZipFileOpenWriteStream(boolean raw, boolean trrntzip, String filename, long uncompressedSize, short compressionMethod, AtomicReference<OutputStream> stream) throws IOException;
+	ZipReturn ZipFileOpenWriteStream(boolean raw, boolean trrntzip, String filename, BigInteger uncompressedSize, short compressionMethod, AtomicReference<OutputStream> stream) throws IOException;
 
 	ZipReturn ZipFileCloseReadStream() throws IOException;
 
