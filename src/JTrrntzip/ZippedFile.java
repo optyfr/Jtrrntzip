@@ -15,17 +15,18 @@ public class ZippedFile
 
 	public final byte[] getCRC()
 	{
-		ByteBuffer bb = ByteBuffer.allocate(4);
+		final ByteBuffer bb = ByteBuffer.allocate(4);
 		bb.order(ByteOrder.LITTLE_ENDIAN);
 		bb.putInt(CRC);
 		return bb.array();
 	}
 
-	public final void setCRC(byte[] value)
+	public final void setCRC(final byte[] value)
 	{
 		CRC = ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN).getInt();
 	}
-	
+
+	@Override
 	public final String toString()
 	{
 		return Hex.encodeHexString(getCRC());

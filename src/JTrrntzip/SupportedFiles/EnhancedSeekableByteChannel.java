@@ -14,7 +14,7 @@ import java.util.zip.Checksum;
 
 public final class EnhancedSeekableByteChannel extends UnsignedTypes implements SeekableByteChannel, Closeable, AutoCloseable
 {
-	private SeekableByteChannel sbc;
+	private final SeekableByteChannel sbc;
 	private ByteOrder bo;
 	private Checksum checksum = null;
 
@@ -22,13 +22,13 @@ public final class EnhancedSeekableByteChannel extends UnsignedTypes implements 
 	private final ByteBuffer ibb = ByteBuffer.allocate(4);
 	private final ByteBuffer sbb = ByteBuffer.allocate(2);
 
-	public EnhancedSeekableByteChannel(SeekableByteChannel sbc, ByteOrder bo)
+	public EnhancedSeekableByteChannel(final SeekableByteChannel sbc, final ByteOrder bo)
 	{
 		this.sbc = sbc;
 		order(bo);
 	}
 
-	public EnhancedSeekableByteChannel order(ByteOrder bo)
+	public EnhancedSeekableByteChannel order(final ByteOrder bo)
 	{
 		this.bo = bo;
 		lbb.order(this.bo);
@@ -42,7 +42,7 @@ public final class EnhancedSeekableByteChannel extends UnsignedTypes implements 
 		return bo;
 	}
 
-	public final EnhancedSeekableByteChannel put(byte b) throws IOException
+	public final EnhancedSeekableByteChannel put(final byte b) throws IOException
 	{
 		if(checksum != null)
 			checksum.update(b);
@@ -50,7 +50,7 @@ public final class EnhancedSeekableByteChannel extends UnsignedTypes implements 
 		return this;
 	}
 
-	public final EnhancedSeekableByteChannel put(byte[] b) throws IOException
+	public final EnhancedSeekableByteChannel put(final byte[] b) throws IOException
 	{
 		if(checksum != null)
 			checksum.update(b, 0, b.length);
@@ -58,7 +58,7 @@ public final class EnhancedSeekableByteChannel extends UnsignedTypes implements 
 		return this;
 	}
 
-	public final EnhancedSeekableByteChannel put(byte[] b, int offset, int len) throws IOException
+	public final EnhancedSeekableByteChannel put(final byte[] b, final int offset, final int len) throws IOException
 	{
 		if(checksum != null)
 			checksum.update(b, offset, len);
@@ -66,7 +66,7 @@ public final class EnhancedSeekableByteChannel extends UnsignedTypes implements 
 		return this;
 	}
 
-	public final EnhancedSeekableByteChannel putLong(long l) throws IOException
+	public final EnhancedSeekableByteChannel putLong(final long l) throws IOException
 	{
 		if(checksum != null)
 			checksum.update(ByteBuffer.allocate(8).putLong(l).array(), 0, 8);
@@ -79,12 +79,12 @@ public final class EnhancedSeekableByteChannel extends UnsignedTypes implements 
 		return this;
 	}
 
-	public final EnhancedSeekableByteChannel putULong(BigInteger l) throws IOException
+	public final EnhancedSeekableByteChannel putULong(final BigInteger l) throws IOException
 	{
-		return putLong(fromULong(l));
+		return putLong(UnsignedTypes.fromULong(l));
 	}
 
-	public final EnhancedSeekableByteChannel putInt(int i) throws IOException
+	public final EnhancedSeekableByteChannel putInt(final int i) throws IOException
 	{
 		ibb.clear();
 		ibb.putInt(i);
@@ -95,12 +95,12 @@ public final class EnhancedSeekableByteChannel extends UnsignedTypes implements 
 		return this;
 	}
 
-	public final EnhancedSeekableByteChannel putUInt(long i) throws IOException
+	public final EnhancedSeekableByteChannel putUInt(final long i) throws IOException
 	{
-		return putInt(fromUInt(i));
+		return putInt(UnsignedTypes.fromUInt(i));
 	}
 
-	public final EnhancedSeekableByteChannel putShort(short s) throws IOException
+	public final EnhancedSeekableByteChannel putShort(final short s) throws IOException
 	{
 		sbb.clear();
 		sbb.putShort(s);
@@ -111,23 +111,23 @@ public final class EnhancedSeekableByteChannel extends UnsignedTypes implements 
 		return this;
 	}
 
-	public final EnhancedSeekableByteChannel putUShort(int s) throws IOException
+	public final EnhancedSeekableByteChannel putUShort(final int s) throws IOException
 	{
-		return putShort(fromUShort(s));
+		return putShort(UnsignedTypes.fromUShort(s));
 	}
 
 	public final byte get() throws IOException
 	{
-		ByteBuffer bb = ByteBuffer.allocate(1);
+		final ByteBuffer bb = ByteBuffer.allocate(1);
 		read(bb);
 		if(checksum != null)
 			checksum.update(bb.get());
 		return bb.get();
 	}
 
-	public final EnhancedSeekableByteChannel get(byte[] dst) throws IOException
+	public final EnhancedSeekableByteChannel get(final byte[] dst) throws IOException
 	{
-		ByteBuffer bb = ByteBuffer.allocate(dst.length);
+		final ByteBuffer bb = ByteBuffer.allocate(dst.length);
 		read(bb);
 		bb.rewind();
 		bb.get(dst);
@@ -136,9 +136,9 @@ public final class EnhancedSeekableByteChannel extends UnsignedTypes implements 
 		return this;
 	}
 
-	public final EnhancedSeekableByteChannel get(byte[] dst, int offset, int len) throws IOException
+	public final EnhancedSeekableByteChannel get(final byte[] dst, final int offset, final int len) throws IOException
 	{
-		ByteBuffer bb = ByteBuffer.allocate(len);
+		final ByteBuffer bb = ByteBuffer.allocate(len);
 		read(bb);
 		bb.rewind();
 		bb.get(dst, offset, len);
@@ -159,7 +159,7 @@ public final class EnhancedSeekableByteChannel extends UnsignedTypes implements 
 
 	public final BigInteger getULong() throws IOException
 	{
-		return toULong(getLong());
+		return UnsignedTypes.toULong(getLong());
 	}
 
 	public final int getInt() throws IOException
@@ -174,7 +174,7 @@ public final class EnhancedSeekableByteChannel extends UnsignedTypes implements 
 
 	public final long getUInt() throws IOException
 	{
-		return toUInt(getInt());
+		return UnsignedTypes.toUInt(getInt());
 	}
 
 	public final short getShort() throws IOException
@@ -189,7 +189,7 @@ public final class EnhancedSeekableByteChannel extends UnsignedTypes implements 
 
 	public final int getUShort() throws IOException
 	{
-		return toUShort(getShort());
+		return UnsignedTypes.toUShort(getShort());
 	}
 
 	public final InputStream getInputStream()
@@ -215,13 +215,13 @@ public final class EnhancedSeekableByteChannel extends UnsignedTypes implements 
 	}
 
 	@Override
-	public final int read(ByteBuffer dst) throws IOException
+	public final int read(final ByteBuffer dst) throws IOException
 	{
 		return sbc.read(dst);
 	}
 
 	@Override
-	public final int write(ByteBuffer src) throws IOException
+	public final int write(final ByteBuffer src) throws IOException
 	{
 		return sbc.write(src);
 	}
@@ -233,7 +233,7 @@ public final class EnhancedSeekableByteChannel extends UnsignedTypes implements 
 	}
 
 	@Override
-	public final SeekableByteChannel position(long newPosition) throws IOException
+	public final SeekableByteChannel position(final long newPosition) throws IOException
 	{
 		return sbc.position(newPosition);
 	}
@@ -245,7 +245,7 @@ public final class EnhancedSeekableByteChannel extends UnsignedTypes implements 
 	}
 
 	@Override
-	public final SeekableByteChannel truncate(long size) throws IOException
+	public final SeekableByteChannel truncate(final long size) throws IOException
 	{
 		return sbc.truncate(size);
 	}

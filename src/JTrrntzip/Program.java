@@ -12,7 +12,7 @@ import org.apache.commons.io.FilenameUtils;
 
 public final class Program extends AbstractTorrentZipOptions implements LogCallback
 {
-	public static void main(String[] args)
+	public static void main(final String[] args)
 	{
 		if(args.length == 0)
 		{
@@ -28,14 +28,14 @@ public final class Program extends AbstractTorrentZipOptions implements LogCallb
 
 	private TorrentZip tz;
 
-	public Program(String[] args)
+	public Program(final String[] args)
 	{
 		super(args);
 
 		if(argfiles != null && argfiles.size() > 0)
 		{
 			tz = new TorrentZip(this, this);
-			for(File argfile : argfiles)
+			for(final File argfile : argfiles)
 			{
 				// first check if arg is a directory
 				if(argfile.isDirectory())
@@ -44,7 +44,7 @@ public final class Program extends AbstractTorrentZipOptions implements LogCallb
 					{
 						ProcessDir(argfile);
 					}
-					catch(IOException e)
+					catch(final IOException e)
 					{
 						e.printStackTrace();
 					}
@@ -56,26 +56,26 @@ public final class Program extends AbstractTorrentZipOptions implements LogCallb
 				if(dir == null)
 					dir = Paths.get(".").toAbsolutePath().normalize().toString();
 
-				String filename = argfile.getName();
+				final String filename = argfile.getName();
 
 				try(DirectoryStream<Path> dirStream = Files.newDirectoryStream(Paths.get(dir), filename))
 				{
 					dirStream.forEach(path -> {
-						String ext = FilenameUtils.getExtension(path.getFileName().toString());
+						final String ext = FilenameUtils.getExtension(path.getFileName().toString());
 						if(ext != null && (ext.equalsIgnoreCase("zip")))
 						{
 							try
 							{
 								ProcessFile(path.toFile());
 							}
-							catch(IOException e)
+							catch(final IOException e)
 							{
 								e.printStackTrace();
 							}
 						}
 					});
 				}
-				catch(IOException e)
+				catch(final IOException e)
 				{
 					e.printStackTrace();
 				}
@@ -88,12 +88,12 @@ public final class Program extends AbstractTorrentZipOptions implements LogCallb
 		}
 	}
 
-	private void ProcessDir(File dir) throws IOException
+	private void ProcessDir(final File dir) throws IOException
 	{
 		if(isVerboseLogging())
 			System.out.println("Checking Dir : " + dir);
 
-		for(File f : dir.listFiles())
+		for(final File f : dir.listFiles())
 		{
 			if(f.isDirectory())
 			{
@@ -102,7 +102,7 @@ public final class Program extends AbstractTorrentZipOptions implements LogCallb
 			}
 			else
 			{
-				String ext = FilenameUtils.getExtension(f.getName());
+				final String ext = FilenameUtils.getExtension(f.getName());
 				if(ext != null && (ext.equalsIgnoreCase("zip")))
 				{
 					tz.Process(f);
@@ -111,19 +111,19 @@ public final class Program extends AbstractTorrentZipOptions implements LogCallb
 		}
 	}
 
-	private void ProcessFile(File file) throws IOException
+	private void ProcessFile(final File file) throws IOException
 	{
 		tz.Process(file);
 	}
 
 	@Override
-	public final void StatusLogCallBack(String log)
+	public final void StatusLogCallBack(final String log)
 	{
 		System.out.format("%s\n", log);
 	}
 
 	@Override
-	public final void StatusCallBack(int percent)
+	public final void StatusCallBack(final int percent)
 	{
 		System.out.format("%03d%% ", percent);
 	}

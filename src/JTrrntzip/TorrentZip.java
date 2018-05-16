@@ -12,29 +12,29 @@ import JTrrntzip.SupportedFiles.ZipFile.ZipFile;
 
 public final class TorrentZip
 {
-	private LogCallback statusLogCallBack;
-	private TorrentZipOptions options;
+	private final LogCallback statusLogCallBack;
+	private final TorrentZipOptions options;
 
-	private byte[] buffer;
+	private final byte[] buffer;
 
-	public TorrentZip(LogCallback statusLogCallBack, TorrentZipOptions options)
+	public TorrentZip(final LogCallback statusLogCallBack, final TorrentZipOptions options)
 	{
 		this.statusLogCallBack = statusLogCallBack;
 		this.options = options;
-		this.buffer = new byte[8 * 1024];
+		buffer = new byte[8 * 1024];
 	}
 
-	public final EnumSet<TrrntZipStatus> Process(File f) throws IOException
+	public final EnumSet<TrrntZipStatus> Process(final File f) throws IOException
 	{
 		if(statusLogCallBack.isVerboseLogging())
 			statusLogCallBack.StatusLogCallBack("");
-		
+
 		statusLogCallBack.StatusLogCallBack(f.getName() + " - ");
 
 		// First open the zip file, and fail out if it is corrupt.
 
-		AtomicReference<ICompress> zipFile = new AtomicReference<>();
-		EnumSet<TrrntZipStatus> tzs = OpenZip(f, zipFile);
+		final AtomicReference<ICompress> zipFile = new AtomicReference<>();
+		final EnumSet<TrrntZipStatus> tzs = OpenZip(f, zipFile);
 		// this will return ValidTrrntZip or CorruptZip.
 
 		if(tzs.contains(TrrntZipStatus.CorruptZip))
@@ -46,7 +46,7 @@ public final class TorrentZip
 		// the zip file may have found a valid trrntzip header, but we now check that all the file info
 		// is actually valid, and may invalidate it being a valid trrntzip if any problem is found.
 
-		List<ZippedFile> zippedFiles = ReadZipContent(zipFile.get());
+		final List<ZippedFile> zippedFiles = ReadZipContent(zipFile.get());
 		tzs.addAll(TorrentZipCheck.CheckZipFiles(zippedFiles,statusLogCallBack));
 
 		// if tza is now just 'ValidTrrntzip' the it is fully valid, and nothing needs to be done to it.
@@ -62,19 +62,19 @@ public final class TorrentZip
 			return tzs;
 		}
 		statusLogCallBack.StatusLogCallBack("TorrentZipping");
-		EnumSet<TrrntZipStatus> fixedTzs = TorrentZipRebuild.ReZipFiles(zippedFiles, zipFile.get(), buffer, statusLogCallBack);
+		final EnumSet<TrrntZipStatus> fixedTzs = TorrentZipRebuild.ReZipFiles(zippedFiles, zipFile.get(), buffer, statusLogCallBack);
 		return fixedTzs;
 	}
 
-	private final EnumSet<TrrntZipStatus> OpenZip(File f, AtomicReference<ICompress> zipFile) throws IOException
+	private final EnumSet<TrrntZipStatus> OpenZip(final File f, final AtomicReference<ICompress> zipFile) throws IOException
 	{
 		zipFile.set(new ZipFile());
 
-		ZipReturn zr = zipFile.get().ZipFileOpen(f, f.lastModified(), true);
+		final ZipReturn zr = zipFile.get().ZipFileOpen(f, f.lastModified(), true);
 		if(zr != ZipReturn.ZipGood)
 			return EnumSet.of(TrrntZipStatus.CorruptZip);
 
-		EnumSet<TrrntZipStatus> tzStatus = EnumSet.noneOf(TrrntZipStatus.class);
+		final EnumSet<TrrntZipStatus> tzStatus = EnumSet.noneOf(TrrntZipStatus.class);
 
 		// first check if the file is a trrntip files
 		if(zipFile.get().ZipStatus().contains(ZipStatus.TrrntZip))
@@ -83,9 +83,9 @@ public final class TorrentZip
 		return tzStatus;
 	}
 
-	private final List<ZippedFile> ReadZipContent(ICompress zipFile)
+	private final List<ZippedFile> ReadZipContent(final ICompress zipFile)
 	{
-		List<ZippedFile> zippedFiles = new ArrayList<ZippedFile>();
+		final List<ZippedFile> zippedFiles = new ArrayList<>();
 		for(int i = 0; i < zipFile.LocalFilesCount(); i++)
 		{
 			final int ii = i;

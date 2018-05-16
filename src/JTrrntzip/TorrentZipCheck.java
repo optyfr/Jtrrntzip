@@ -5,9 +5,9 @@ import java.util.List;
 
 public class TorrentZipCheck
 {
-	public static EnumSet<TrrntZipStatus> CheckZipFiles(List<ZippedFile> zippedFiles, LogCallback StatusLogCallBack)
+	public static EnumSet<TrrntZipStatus> CheckZipFiles(final List<ZippedFile> zippedFiles, final LogCallback StatusLogCallBack)
 	{
-		EnumSet<TrrntZipStatus> tzStatus = EnumSet.noneOf(TrrntZipStatus.class);
+		final EnumSet<TrrntZipStatus> tzStatus = EnumSet.noneOf(TrrntZipStatus.class);
 
 		// ***************************** RULE 1 *************************************
 		// Directory separator should be a '/' a '\' is invalid and should be replaced with '/'
@@ -16,9 +16,9 @@ public class TorrentZipCheck
 		// this needs done before the sort, so that the sort is correct.
 		// return BadDirectorySeparator if errors found.
 		boolean error1 = false;
-		for(ZippedFile t : zippedFiles)
+		for(final ZippedFile t : zippedFiles)
 		{
-			char[] bytes = t.Name.toCharArray();
+			final char[] bytes = t.Name.toCharArray();
 			boolean fixDir = false;
 			for(int j = 0; j < bytes.length; j++)
 			{
@@ -49,10 +49,10 @@ public class TorrentZipCheck
 			for(int i = 0; i < zippedFiles.size() - 1; i++)
 			{
 				// int c = TrrntZipStringCompare(zippedFiles.get(i).Name, zippedFiles.get(i+1).Name);
-				int c = zippedFiles.get(i).Name.compareToIgnoreCase(zippedFiles.get(i + 1).Name);
+				final int c = zippedFiles.get(i).Name.compareToIgnoreCase(zippedFiles.get(i + 1).Name);
 				if(c > 0)
 				{
-					ZippedFile T = zippedFiles.get(i);
+					final ZippedFile T = zippedFiles.get(i);
 					zippedFiles.set(i, zippedFiles.get(i + 1));
 					zippedFiles.set(i + 1, T);
 

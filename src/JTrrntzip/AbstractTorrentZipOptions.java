@@ -14,10 +14,10 @@ public class AbstractTorrentZipOptions implements TorrentZipOptions
 
 	protected List<File> argfiles = null;
 
-	public AbstractTorrentZipOptions(String[] args)
+	public AbstractTorrentZipOptions(final String[] args)
 	{
-		List<File> argfiles = new ArrayList<>();
-		for(String arg : args)
+		final List<File> argfiles = new ArrayList<>();
+		for(final String arg : args)
 		{
 			switch(arg)
 			{

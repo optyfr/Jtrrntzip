@@ -9,7 +9,7 @@ public class SimpleTorrentZipOptions implements TorrentZipOptions
 	{
 	}
 
-	public SimpleTorrentZipOptions(boolean forceRezip, boolean checkOnly)
+	public SimpleTorrentZipOptions(final boolean forceRezip, final boolean checkOnly)
 	{
 		this.forceRezip = forceRezip;
 		this.checkOnly = checkOnly;

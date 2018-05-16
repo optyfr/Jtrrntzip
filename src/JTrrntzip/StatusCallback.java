@@ -2,5 +2,5 @@ package JTrrntzip;
 
 public interface StatusCallback
 {
-    void StatusCallBack(int percent);
+	void StatusCallBack(int percent);
 }
