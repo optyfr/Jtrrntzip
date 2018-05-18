@@ -25,9 +25,9 @@ public final class TorrentZipRebuild
 		final int bufferSize = buffer.length;
 
 		final File filename = new File(originalZipFile.ZipFilename());
-		final File tmpFilename = new File(filename.getParentFile(), FilenameUtils.getBaseName(filename.getName()) + ".tmp");
+		final File tmpFilename = new File(filename.getParentFile(), FilenameUtils.getBaseName(filename.getName()) + ".tmp"); //$NON-NLS-1$
 
-		final File outfilename = new File(filename.getParentFile(), FilenameUtils.getBaseName(filename.getName()) + ".zip");
+		final File outfilename = new File(filename.getParentFile(), FilenameUtils.getBaseName(filename.getName()) + ".zip"); //$NON-NLS-1$
 
 		if(tmpFilename.exists())
 			tmpFilename.delete();
@@ -46,7 +46,7 @@ public final class TorrentZipRebuild
 				final ZippedFile t = zippedFiles.get(i);
 
 				if(LogCallback.isVerboseLogging())
-					LogCallback.StatusLogCallBack(String.format("%15s %s %s", t.Size, t.toString(), t.Name));
+					LogCallback.StatusLogCallBack(String.format("%15s %s %s", t.Size, t.toString(), t.Name)); //$NON-NLS-1$
 
 				final AtomicReference<InputStream> readStream = new AtomicReference<>();
 				final AtomicReference<BigInteger> streamSize = new AtomicReference<>();

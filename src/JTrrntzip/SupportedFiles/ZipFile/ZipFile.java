@@ -23,6 +23,7 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
+import JTrrntzip.Messages;
 import JTrrntzip.ZipOpenType;
 import JTrrntzip.ZipReturn;
 import JTrrntzip.ZipStatus;
@@ -116,7 +117,7 @@ public final class ZipFile implements ICompress
 
 				byte[] bFileName = new byte[fileNameLength];
 				esbc.get(bFileName);
-				fileName = (_generalPurposeBitFlag & (1 << 11)) == 0 ? new String(bFileName, Charset.forName("Cp437")) : new String(bFileName, Charset.forName("UTF8"));
+				fileName = (_generalPurposeBitFlag & (1 << 11)) == 0 ? new String(bFileName, Charset.forName("Cp437")) : new String(bFileName, Charset.forName("UTF8")); //$NON-NLS-1$ //$NON-NLS-2$
 
 				byte[] extraField = new byte[extraFieldLength];
 				esbc.get(extraField);
@@ -155,7 +156,7 @@ public final class ZipFile implements ICompress
 
 							byte[] dst = new byte[charLen];
 							bb.get(dst);
-							fileName = new String(dst, Charset.forName("UTF8"));
+							fileName = new String(dst, Charset.forName("UTF8")); //$NON-NLS-1$
 
 							break;
 						default:
@@ -227,13 +228,13 @@ public final class ZipFile implements ICompress
 
 			byte[] bFileName;
 
-			if(!Charset.forName("Cp437").newEncoder().canEncode(fileName))
+			if(!Charset.forName("Cp437").newEncoder().canEncode(fileName)) //$NON-NLS-1$
 			{
 				_generalPurposeBitFlag |= 1 << 11;
-				bFileName = fileName.getBytes(Charset.forName("UTF8"));
+				bFileName = fileName.getBytes(Charset.forName("UTF8")); //$NON-NLS-1$
 			}
 			else
-				bFileName = fileName.getBytes(Charset.forName("Cp437"));
+				bFileName = fileName.getBytes(Charset.forName("Cp437")); //$NON-NLS-1$
 			int fileNameLength = bFileName.length;
 
 			int versionNeededToExtract = (zip64 ? 45 : 20);
@@ -314,7 +315,7 @@ public final class ZipFile implements ICompress
 
 				byte[] bFileName = new byte[fileNameLength];
 				esbc.get(bFileName);
-				String tFileName = (generalPurposeBitFlagLocal & (1 << 11)) == 0 ? new String(bFileName, Charset.forName("Cp437")) : new String(bFileName, Charset.forName("UTF8"));
+				String tFileName = (generalPurposeBitFlagLocal & (1 << 11)) == 0 ? new String(bFileName, Charset.forName("Cp437")) : new String(bFileName, Charset.forName("UTF8")); //$NON-NLS-1$ //$NON-NLS-2$
 
 				byte[] extraField = new byte[extraFieldLength];
 				esbc.get(extraField);
@@ -358,7 +359,7 @@ public final class ZipFile implements ICompress
 
 							byte[] dst = new byte[charLen];
 							bb.get(dst);
-							fileName = new String(dst, Charset.forName("UTF8"));
+							fileName = new String(dst, Charset.forName("UTF8")); //$NON-NLS-1$
 
 							break;
 						default:
@@ -431,7 +432,7 @@ public final class ZipFile implements ICompress
 				byte[] bFileName = new byte[fileNameLength];
 				esbc.get(bFileName);
 				@SuppressWarnings("unused")
-				String tFileName = (_generalPurposeBitFlag & (1 << 11)) == 0 ? new String(bFileName, Charset.forName("Cp437")) : new String(bFileName, Charset.forName("UTF8"));
+				String tFileName = (_generalPurposeBitFlag & (1 << 11)) == 0 ? new String(bFileName, Charset.forName("Cp437")) : new String(bFileName, Charset.forName("UTF8")); //$NON-NLS-1$ //$NON-NLS-2$
 
 				byte[] extraField = new byte[extraFieldLength];
 				esbc.get(extraField);
@@ -467,7 +468,7 @@ public final class ZipFile implements ICompress
 
 							byte[] dst = new byte[charLen];
 							bb.get(dst);
-							fileName = new String(dst, Charset.forName("UTF8"));
+							fileName = new String(dst, Charset.forName("UTF8")); //$NON-NLS-1$
 							break;
 						default:
 							bb.position(bb.position() + blockLength);
@@ -496,13 +497,13 @@ public final class ZipFile implements ICompress
 
 			byte[] bFileName;
 
-			if(!Charset.forName("Cp437").newEncoder().canEncode(fileName))
+			if(!Charset.forName("Cp437").newEncoder().canEncode(fileName)) //$NON-NLS-1$
 			{
 				_generalPurposeBitFlag |= 1 << 11;
-				bFileName = fileName.getBytes(Charset.forName("UTF8"));
+				bFileName = fileName.getBytes(Charset.forName("UTF8")); //$NON-NLS-1$
 			}
 			else
-				bFileName = fileName.getBytes(Charset.forName("Cp437"));
+				bFileName = fileName.getBytes(Charset.forName("Cp437")); //$NON-NLS-1$
 
 			int versionNeededToExtract = (zip64 ? 45 : 20);
 
@@ -782,7 +783,7 @@ public final class ZipFile implements ICompress
 
 	public final String ZipFilename()
 	{
-		return _zipFileInfo != null ? _zipFileInfo.getAbsolutePath() : "";
+		return _zipFileInfo != null ? _zipFileInfo.getAbsolutePath() : ""; //$NON-NLS-1$
 	}
 
 	public final long TimeStamp()
@@ -1103,7 +1104,7 @@ public final class ZipFile implements ICompress
 			// check if the ZIP has a valid TorrentZip file comment
 			if(_fileComment.length == 22)
 			{
-				if(new String(_fileComment, Charset.forName("Cp437")).substring(0, 14).equals("TORRENTZIPPED-"))
+				if(new String(_fileComment, Charset.forName("Cp437")).substring(0, 14).equals("TORRENTZIPPED-")) //$NON-NLS-1$ //$NON-NLS-2$
 				{
 					byte[] buffer = new byte[_centerDirSize.intValue()];
 					_esbc.position(_centerDirStart.longValue());
@@ -1111,8 +1112,8 @@ public final class ZipFile implements ICompress
 					_esbc.get(buffer);
 					long r = _esbc.endChecksum();
 
-					String tcrc = new String(_fileComment, Charset.forName("Cp437")).substring(14, 22);
-					String zcrc = String.format("%08X", r);
+					String tcrc = new String(_fileComment, Charset.forName("Cp437")).substring(14, 22); //$NON-NLS-1$
+					String zcrc = String.format("%08X", r); //$NON-NLS-1$
 					if(tcrc.equalsIgnoreCase(zcrc))
 						trrntzip = true;
 
@@ -1235,7 +1236,7 @@ public final class ZipFile implements ICompress
 
 		_centerDirSize = BigInteger.valueOf(_esbc.position() - _centerDirStart.longValue());
 
-		_fileComment = lTrrntzip ? String.format("TORRENTZIPPED-%08X", _esbc.endChecksum()).getBytes(Charset.forName("Cp437")) : new byte[0];
+		_fileComment = lTrrntzip ? String.format("TORRENTZIPPED-%08X", _esbc.endChecksum()).getBytes(Charset.forName("Cp437")) : new byte[0]; //$NON-NLS-1$ //$NON-NLS-2$
 		_pZipStatus = lTrrntzip ? EnumSet.of(ZipStatus.TrrntZip) : EnumSet.noneOf(ZipStatus.class);
 
 		if(_zip64)
@@ -1378,44 +1379,44 @@ public final class ZipFile implements ICompress
 
 	public final static String ZipErrorMessageText(ZipReturn zS)
 	{
-		String ret = "Unknown";
+		String ret = Messages.getString("ZipFile.ZIPUnknown"); //$NON-NLS-1$
 		switch(zS)
 		{
 			case ZipGood:
-				ret = "";
+				ret = Messages.getString("ZipFile.ZIPGood"); //$NON-NLS-1$
 				break;
 			case ZipFileCountError:
-				ret = "The number of file in the Zip does not mach the number of files in the Zips Centeral Directory";
+				ret = Messages.getString("ZipFile.ZIPFileCountError"); //$NON-NLS-1$
 				break;
 			case ZipSignatureError:
-				ret = "An unknown Signature Block was found in the Zip";
+				ret = Messages.getString("ZipFile.ZipSignatureError"); //$NON-NLS-1$
 				break;
 			case ZipExtraDataOnEndOfZip:
-				ret = "Extra Data was found on the end of the Zip";
+				ret = Messages.getString("ZipFile.ZipExtraDataOnEndOfZip"); //$NON-NLS-1$
 				break;
 			case ZipUnsupportedCompression:
-				ret = "An unsupported Compression method was found in the Zip, if you recompress this zip it will be usable";
+				ret = Messages.getString("ZipFile.ZipUnsipportedCompression"); //$NON-NLS-1$
 				break;
 			case ZipLocalFileHeaderError:
-				ret = "Error reading a zipped file header information";
+				ret = Messages.getString("ZipFile.ZipLocalFileHeaderError"); //$NON-NLS-1$
 				break;
 			case ZipCentralDirError:
-				ret = "There is an error in the Zip Centeral Directory";
+				ret = Messages.getString("ZipFile.ZipCentralDirError"); //$NON-NLS-1$
 				break;
 			case ZipReadingFromOutputFile:
-				ret = "Trying to write to a Zip file open for output only";
+				ret = Messages.getString("ZipFile.ZipReadingFromOutputFile"); //$NON-NLS-1$
 				break;
 			case ZipWritingToInputFile:
-				ret = "Tring to read from a Zip file open for input only";
+				ret = Messages.getString("ZipFile.ZipWritingToInputFile"); //$NON-NLS-1$
 				break;
 			case ZipErrorGettingDataStream:
-				ret = "Error creating Data Stream";
+				ret = Messages.getString("ZipFile.ZipErrorGettingDataStream"); //$NON-NLS-1$
 				break;
 			case ZipCRCDecodeError:
-				ret = "CRC error";
+				ret = Messages.getString("ZipFile.ZipCRCDecodeError"); //$NON-NLS-1$
 				break;
 			case ZipDecodeError:
-				ret = "Error unzipping a file";
+				ret = Messages.getString("ZipFile.ZipDecodeError"); //$NON-NLS-1$
 				break;
 			default:
 				ret = zS.toString();

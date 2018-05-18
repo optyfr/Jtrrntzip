@@ -27,9 +27,9 @@ public final class TorrentZip
 	public final EnumSet<TrrntZipStatus> Process(final File f) throws IOException
 	{
 		if(statusLogCallBack.isVerboseLogging())
-			statusLogCallBack.StatusLogCallBack("");
+			statusLogCallBack.StatusLogCallBack(""); //$NON-NLS-1$
 
-		statusLogCallBack.StatusLogCallBack(f.getName() + " - ");
+		statusLogCallBack.StatusLogCallBack(f.getName() + " - "); //$NON-NLS-1$
 
 		// First open the zip file, and fail out if it is corrupt.
 
@@ -39,7 +39,7 @@ public final class TorrentZip
 
 		if(tzs.contains(TrrntZipStatus.CorruptZip))
 		{
-			statusLogCallBack.StatusLogCallBack("Zip file is corrupt");
+			statusLogCallBack.StatusLogCallBack(Messages.getString("TorrentZip.ZipFileCorrupt")); //$NON-NLS-1$
 			return tzs;
 		}
 
@@ -53,7 +53,7 @@ public final class TorrentZip
 
 		if(tzs.contains(TrrntZipStatus.ValidTrrntzip) && !options.isForceRezip())
 		{
-			statusLogCallBack.StatusLogCallBack("Skipping File");
+			statusLogCallBack.StatusLogCallBack(Messages.getString("TorrentZip.SkippingFile")); //$NON-NLS-1$
 			return tzs;
 		}
 		if(options.isCheckOnly())
@@ -61,7 +61,7 @@ public final class TorrentZip
 			statusLogCallBack.StatusLogCallBack(tzs.toString());
 			return tzs;
 		}
-		statusLogCallBack.StatusLogCallBack("TorrentZipping");
+		statusLogCallBack.StatusLogCallBack(Messages.getString("TorrentZip.TorrentZipping")); //$NON-NLS-1$
 		final EnumSet<TrrntZipStatus> fixedTzs = TorrentZipRebuild.ReZipFiles(zippedFiles, zipFile.get(), buffer, statusLogCallBack);
 		return fixedTzs;
 	}

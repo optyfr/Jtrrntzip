@@ -21,36 +21,36 @@ public class AbstractTorrentZipOptions implements TorrentZipOptions
 		{
 			switch(arg)
 			{
-				case "-?":
-					System.out.format("Jtrrentzip v%s\n", Program.class.getPackage().getSpecificationVersion());
-					System.out.format("Copyright (C) 2018 opty\n");
-					System.out.format("Based on trrntzipDN by GordonJ\n");
-					System.out.format("Usage: trrntzip [OPTIONS] [PATH/ZIP FILE]\n");
-					System.out.format("Options:\n");
-					System.out.format("-? : show this help\n");
-					System.out.format("-s : prevent sub-directory recursion\n");
-					System.out.format("-f : force re-zip\n");
-					System.out.format("-c : Check files only do not repair\n");
-					System.out.format("-l : verbose logging\n");
-					System.out.format("-v : show version\n");
-					System.out.format("-g : pause when finished\n");
+				case "-?": //$NON-NLS-1$
+					System.out.format("Jtrrentzip v%s\n", Program.class.getPackage().getSpecificationVersion()); //$NON-NLS-1$
+					System.out.format(Messages.getString("AbstractTorrentZipOptions.Copyright")); //$NON-NLS-1$
+					System.out.format(Messages.getString("AbstractTorrentZipOptions.BasedOnTrrntzipDN")); //$NON-NLS-1$
+					System.out.format(Messages.getString("AbstractTorrentZipOptions.Usage")); //$NON-NLS-1$
+					System.out.format(Messages.getString("AbstractTorrentZipOptions.Options")); //$NON-NLS-1$
+					System.out.format(Messages.getString("AbstractTorrentZipOptions.ShowThisHelp")); //$NON-NLS-1$
+					System.out.format(Messages.getString("AbstractTorrentZipOptions.PreventSubDirRecursion")); //$NON-NLS-1$
+					System.out.format(Messages.getString("AbstractTorrentZipOptions.ForceReZip")); //$NON-NLS-1$
+					System.out.format(Messages.getString("AbstractTorrentZipOptions.CheckOnly")); //$NON-NLS-1$
+					System.out.format(Messages.getString("AbstractTorrentZipOptions.VerboseLogging")); //$NON-NLS-1$
+					System.out.format(Messages.getString("AbstractTorrentZipOptions.ShowVersion")); //$NON-NLS-1$
+					System.out.format(Messages.getString("AbstractTorrentZipOptions.PauseWhenFinished")); //$NON-NLS-1$
 					return;
-				case "-s":
+				case "-s": //$NON-NLS-1$
 					NoRecursion = true;
 					break;
-				case "-f":
+				case "-f": //$NON-NLS-1$
 					ForceReZip = true;
 					break;
-				case "-c":
+				case "-c": //$NON-NLS-1$
 					CheckOnly = true;
 					break;
-				case "-l":
+				case "-l": //$NON-NLS-1$
 					VerboseLogging = true;
 					break;
-				case "-v":
-					System.out.format("TorrentZip v%s", Program.class.getPackage().getSpecificationVersion());
+				case "-v": //$NON-NLS-1$
+					System.out.format("TorrentZip v%s", Program.class.getPackage().getSpecificationVersion()); //$NON-NLS-1$
 					return;
-				case "-g":
+				case "-g": //$NON-NLS-1$
 					_guiLaunch = true;
 					break;
 				default:
