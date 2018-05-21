@@ -1,0 +1,74 @@
+apply plugin: 'java'
+
+def props = new Properties()
+file("dist/ver.properties").withInputStream { props.load(it) }
+
+version = props.getProperty("Specification-Version")+props.getProperty("Implementation-Version")
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile group: 'commons-codec', name: 'commons-codec', version: '1.11'
+	compile group: 'commons-io', name: 'commons-io', version: '2.6'
+	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
+}
+
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ["src"]
+        }
+    }
+}
+
+task copyRuntimeLibs(type: Copy) {  
+    into "$buildDir/libs/lib/"
+    from configurations.compile
+}
+
+task copyLaunchScript(type: Copy) {  
+    from ('dist') {
+    	include '*.bat'
+    	include '*.sh'
+    }
+    into "$buildDir/libs/"
+}
+
+// attach to assemble task
+assemble.dependsOn copyRuntimeLibs
+assemble.dependsOn copyLaunchScript
+
+jar {
+	manifest {
+		attributes(
+			"Manifest-Version"     : "1.0",
+		    "Specification-Title"  : "Jtrrntzip",
+		    "Specification-Version": props.getProperty("Specification-Version"),
+        	"Implementation-Title" : "JTrrntzip",
+            "Implementation-Version" : props.getProperty("Implementation-Version"),
+            "Main-Class"           : "Jtrrntzip",
+            "Class-Path"           : configurations.compile.collect { 'lib/' + it.getName() }.join(' ')
+		)
+		archiveName baseName + '.' + extension
+	}
+}
+
+apply plugin: 'distribution'
+
+distributions {
+    main {
+         contents {
+        	from (configurations.compile) {
+        		into('lib')
+        	}
+        	from (jar)
+        	from ('dist') {
+		    	include '*.bat'
+    			include '*.sh'
+    		}
+        }
+    }
+}
