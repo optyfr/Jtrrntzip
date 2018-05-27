@@ -35,7 +35,7 @@ jar {
 		    "Specification-Version": props.getProperty("Specification-Version"),
         	"Implementation-Title" : "JTrrntzip",
             "Implementation-Version" : props.getProperty("Implementation-Version"),
-            "Main-Class"           : "Jtrrntzip",
+            "Main-Class"           : "JTrrntzip.Program",
             "Class-Path"           : configurations.compile.collect { 'lib/' + it.getName() }.join(' ')
 		)
 		archiveName baseName + '.' + extension

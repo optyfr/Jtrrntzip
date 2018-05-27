@@ -54,11 +54,13 @@ public final class TorrentZip
 		if(tzs.contains(TrrntZipStatus.ValidTrrntzip) && !options.isForceRezip())
 		{
 			statusLogCallBack.StatusLogCallBack(Messages.getString("TorrentZip.SkippingFile")); //$NON-NLS-1$
+			zipFile.get().ZipFileClose();
 			return tzs;
 		}
 		if(options.isCheckOnly())
 		{
 			statusLogCallBack.StatusLogCallBack(tzs.toString());
+			zipFile.get().ZipFileClose();
 			return tzs;
 		}
 		statusLogCallBack.StatusLogCallBack(Messages.getString("TorrentZip.TorrentZipping")); //$NON-NLS-1$
