@@ -29,7 +29,7 @@ public final class TorrentZipRebuild
 
 		final File outfilename = new File(filename.getParentFile(), FilenameUtils.getBaseName(filename.getName()) + ".zip"); //$NON-NLS-1$
 
-		if(tmpFilename.exists())
+		if (tmpFilename.exists())
 			tmpFilename.delete();
 
 		final ICompress zipFileOut = new ZipFile();
@@ -39,13 +39,13 @@ public final class TorrentZipRebuild
 			zipFileOut.ZipFileCreate(tmpFilename);
 
 			// by now the zippedFiles have been sorted so just loop over them
-			for(int i = 0; i < zippedFiles.size(); i++)
+			for (int i = 0; i < zippedFiles.size(); i++)
 			{
 				LogCallback.StatusCallBack((int) ((double) (i + 1) / (zippedFiles.size()) * 100));
 
 				final ZippedFile t = zippedFiles.get(i);
 
-				if(LogCallback.isVerboseLogging())
+				if (LogCallback.isVerboseLogging())
 					LogCallback.StatusLogCallBack(String.format("%15s %s %s", t.Size, t.toString(), t.Name)); //$NON-NLS-1$
 
 				final AtomicReference<InputStream> readStream = new AtomicReference<>();
@@ -54,17 +54,17 @@ public final class TorrentZipRebuild
 
 				ZipReturn zrInput = ZipReturn.ZipUntested;
 				ZipFile z = null;
-				if(originalZipFile instanceof ZipFile)
+				if (originalZipFile instanceof ZipFile)
 				{
 					z = (ZipFile) originalZipFile;
-					if(z != null)
+					if (z != null)
 						zrInput = z.ZipFileOpenReadStream(t.Index, false, readStream, streamSize, compMethod);
 				}
 
 				final AtomicReference<OutputStream> writeStream = new AtomicReference<>();
 				final ZipReturn zrOutput = zipFileOut.ZipFileOpenWriteStream(false, true, t.Name, streamSize.get(), (short) 8, writeStream);
 
-				if(zrInput != ZipReturn.ZipGood || zrOutput != ZipReturn.ZipGood)
+				if (zrInput != ZipReturn.ZipGood || zrOutput != ZipReturn.ZipGood)
 				{
 					// Error writing local File.
 					zipFileOut.ZipFileClose();
@@ -79,24 +79,23 @@ public final class TorrentZipRebuild
 				final BufferedOutputStream bWriteStream = new BufferedOutputStream(writeStream.get(), buffer.length);
 
 				BigInteger sizetogo = streamSize.get();
-				while(sizetogo.compareTo(BigInteger.valueOf(0)) > 0)
+				while (sizetogo.compareTo(BigInteger.valueOf(0)) > 0)
 				{
 					final int sizenow = sizetogo.compareTo(BigInteger.valueOf(bufferSize)) > 0 ? bufferSize : sizetogo.intValue();
-
 					bcrcCs.read(buffer, 0, sizenow);
 					bWriteStream.write(buffer, 0, sizenow);
 					sizetogo = sizetogo.subtract(BigInteger.valueOf(sizenow));
 				}
 				bWriteStream.flush();
-				if(writeStream.get() instanceof DeflaterOutputStream)
+				if (writeStream.get() instanceof DeflaterOutputStream)
 					((DeflaterOutputStream) writeStream.get()).finish();
 
-				if(z != null)
+				if (z != null)
 					originalZipFile.ZipFileCloseReadStream();
 
 				final long crc = crcCs.getChecksum().getValue();
 
-				if((int) crc != t.CRC)
+				if ((int) crc != t.CRC)
 					return EnumSet.of(TrrntZipStatus.CorruptZip);
 
 				zipFileOut.ZipFileCloseWriteStream(t.getCRC());
@@ -111,7 +110,7 @@ public final class TorrentZipRebuild
 			return EnumSet.of(TrrntZipStatus.ValidTrrntzip);
 
 		}
-		catch(final Throwable e)
+		catch (final Throwable e)
 		{
 			e.printStackTrace();
 			Optional.ofNullable(zipFileOut).ifPresent(t -> {
@@ -120,7 +119,7 @@ public final class TorrentZipRebuild
 					t.ZipFileCloseFailed();
 					t.close();
 				}
-				catch(final IOException e1)
+				catch (final IOException e1)
 				{
 					e1.printStackTrace();
 				}
@@ -131,7 +130,7 @@ public final class TorrentZipRebuild
 					t.ZipFileClose();
 					t.close();
 				}
-				catch(final IOException e1)
+				catch (final IOException e1)
 				{
 					e1.printStackTrace();
 				}
