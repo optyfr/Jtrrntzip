@@ -866,7 +866,7 @@ public final class ZipFile implements ICompress
 		if(deflater.get()!=null)
 			deflater.get().end();
 		if(inflater.get()!=null)
-			deflater.get().end();
+			inflater.get().end();
 		if (_esbc != null)
 		{
 			try
