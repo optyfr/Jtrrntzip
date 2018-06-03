@@ -1,7 +1,14 @@
 package JTrrntzip;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
@@ -11,7 +18,6 @@ import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.DeflaterOutputStream;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
 import JTrrntzip.SupportedFiles.ICompress;
@@ -105,8 +111,10 @@ public final class TorrentZipRebuild
 			zipFileOut.close();
 			originalZipFile.ZipFileClose();
 			originalZipFile.close();
-			filename.delete();
-			FileUtils.moveFile(tmpFilename, outfilename);
+			if(!filename.equals(outfilename))
+				filename.delete();
+			Files.copy(tmpFilename.toPath(), outfilename.toPath(), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
+			tmpFilename.delete();
 			return EnumSet.of(TrrntZipStatus.ValidTrrntzip);
 
 		}
