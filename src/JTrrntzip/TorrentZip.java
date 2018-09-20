@@ -74,7 +74,10 @@ public final class TorrentZip
 
 		final ZipReturn zr = zipFile.get().ZipFileOpen(f, f.lastModified(), true);
 		if(zr != ZipReturn.ZipGood)
+		{
+			//System.out.println(zr);
 			return EnumSet.of(TrrntZipStatus.CorruptZip);
+		}
 
 		final EnumSet<TrrntZipStatus> tzStatus = EnumSet.noneOf(TrrntZipStatus.class);
 
