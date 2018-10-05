@@ -1,11 +1,6 @@
 package JTrrntzip;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -28,8 +23,8 @@ public final class TorrentZipRebuild
 
 	public final static EnumSet<TrrntZipStatus> ReZipFiles(final List<ZippedFile> zippedFiles, final ICompress originalZipFile, final byte[] buffer, final LogCallback LogCallback)
 	{
+		assert originalZipFile!=null;
 		final int bufferSize = buffer.length;
-
 		final File filename = new File(originalZipFile.ZipFilename());
 		final File tmpFilename = new File(filename.getParentFile(), FilenameUtils.getBaseName(filename.getName()) + ".tmp"); //$NON-NLS-1$
 
