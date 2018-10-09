@@ -93,7 +93,8 @@ public final class Program extends AbstractTorrentZipOptions implements LogCallb
 		if(isVerboseLogging())
 			System.out.println(Messages.getString("Program.CheckingDir") + dir); //$NON-NLS-1$
 
-		for(final File f : dir.listFiles())
+		File[] files = dir.listFiles();
+		if(files!=null) for(final File f : files)
 		{
 			if(f.isDirectory())
 			{
