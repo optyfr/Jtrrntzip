@@ -5,6 +5,8 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -127,13 +129,13 @@ public final class ZipFile implements ICompress
 
 			byte[] bFileName;
 
-			if (!Charset.forName("Cp437").newEncoder().canEncode(fileName)) //$NON-NLS-1$
+			if (!StandardCharsets.US_ASCII.newEncoder().canEncode(fileName)) //$NON-NLS-1$
 			{
 				_generalPurposeBitFlag |= 1 << 11;
-				bFileName = fileName.getBytes(Charset.forName("UTF8")); //$NON-NLS-1$
+				bFileName = fileName.getBytes(StandardCharsets.UTF_8); //$NON-NLS-1$
 			}
 			else
-				bFileName = fileName.getBytes(Charset.forName("Cp437")); //$NON-NLS-1$
+				bFileName = fileName.getBytes(StandardCharsets.US_ASCII); //$NON-NLS-1$
 			int fileNameLength = bFileName.length;
 
 			int versionNeededToExtract = (zip64 ? 45 : 20);
@@ -198,7 +200,7 @@ public final class ZipFile implements ICompress
 
 				byte[] bFileName = new byte[fileNameLength];
 				esbc.get(bFileName);
-				fileName = (_generalPurposeBitFlag & (1 << 11)) == 0 ? new String(bFileName, Charset.forName("Cp437")) : new String(bFileName, Charset.forName("UTF8")); //$NON-NLS-1$ //$NON-NLS-2$
+				fileName = (_generalPurposeBitFlag & (1 << 11)) == 0 ? new String(bFileName, StandardCharsets.US_ASCII) : new String(bFileName, StandardCharsets.UTF_8); //$NON-NLS-1$ //$NON-NLS-2$
 
 				byte[] extraField = new byte[extraFieldLength];
 				esbc.get(extraField);
@@ -238,7 +240,7 @@ public final class ZipFile implements ICompress
 
 							byte[] dst = new byte[charLen];
 							bb.get(dst);
-							fileName = new String(dst, Charset.forName("UTF8")); //$NON-NLS-1$
+							fileName = new String(dst, StandardCharsets.UTF_8); //$NON-NLS-1$
 
 							break;
 						default:
@@ -425,7 +427,7 @@ public final class ZipFile implements ICompress
 
 				byte[] bFileName = new byte[fileNameLength];
 				esbc.get(bFileName);
-				String tFileName = (generalPurposeBitFlagLocal & (1 << 11)) == 0 ? new String(bFileName, Charset.forName("Cp437")) : new String(bFileName, Charset.forName("UTF8")); //$NON-NLS-1$ //$NON-NLS-2$
+				String tFileName = (generalPurposeBitFlagLocal & (1 << 11)) == 0 ? new String(bFileName, StandardCharsets.US_ASCII) : new String(bFileName, StandardCharsets.UTF_8); //$NON-NLS-1$ //$NON-NLS-2$
 
 				byte[] extraField = new byte[extraFieldLength];
 				esbc.get(extraField);
@@ -469,7 +471,7 @@ public final class ZipFile implements ICompress
 
 							byte[] dst = new byte[charLen];
 							bb.get(dst);
-							fileName = new String(dst, Charset.forName("UTF8")); //$NON-NLS-1$
+							fileName = new String(dst, StandardCharsets.UTF_8); //$NON-NLS-1$
 
 							break;
 						default:
@@ -542,7 +544,7 @@ public final class ZipFile implements ICompress
 				byte[] bFileName = new byte[fileNameLength];
 				esbc.get(bFileName);
 				@SuppressWarnings("unused")
-				String tFileName = (_generalPurposeBitFlag & (1 << 11)) == 0 ? new String(bFileName, Charset.forName("Cp437")) : new String(bFileName, Charset.forName("UTF8")); //$NON-NLS-1$ //$NON-NLS-2$
+				String tFileName = (_generalPurposeBitFlag & (1 << 11)) == 0 ? new String(bFileName, StandardCharsets.US_ASCII) : new String(bFileName, StandardCharsets.UTF_8); //$NON-NLS-1$ //$NON-NLS-2$
 
 				byte[] extraField = new byte[extraFieldLength];
 				esbc.get(extraField);
@@ -578,7 +580,7 @@ public final class ZipFile implements ICompress
 
 							byte[] dst = new byte[charLen];
 							bb.get(dst);
-							fileName = new String(dst, Charset.forName("UTF8")); //$NON-NLS-1$
+							fileName = new String(dst, StandardCharsets.UTF_8); //$NON-NLS-1$
 							break;
 						default:
 							bb.position(bb.position() + blockLength);
@@ -607,13 +609,13 @@ public final class ZipFile implements ICompress
 
 			byte[] bFileName;
 
-			if (!Charset.forName("Cp437").newEncoder().canEncode(fileName)) //$NON-NLS-1$
+			if (!StandardCharsets.US_ASCII.newEncoder().canEncode(fileName)) //$NON-NLS-1$
 			{
 				_generalPurposeBitFlag |= 1 << 11;
-				bFileName = fileName.getBytes(Charset.forName("UTF8")); //$NON-NLS-1$
+				bFileName = fileName.getBytes(StandardCharsets.UTF_8); //$NON-NLS-1$
 			}
 			else
-				bFileName = fileName.getBytes(Charset.forName("Cp437")); //$NON-NLS-1$
+				bFileName = fileName.getBytes(StandardCharsets.US_ASCII); //$NON-NLS-1$
 
 			int versionNeededToExtract = (zip64 ? 45 : 20);
 
@@ -1150,7 +1152,7 @@ public final class ZipFile implements ICompress
 
 		_centerDirSize = BigInteger.valueOf(_esbc.position() - _centerDirStart.longValue());
 
-		_fileComment = lTrrntzip ? String.format("TORRENTZIPPED-%08X", _esbc.endChecksum()).getBytes(Charset.forName("Cp437")) : new byte[0]; //$NON-NLS-1$ //$NON-NLS-2$
+		_fileComment = lTrrntzip ? String.format("TORRENTZIPPED-%08X", _esbc.endChecksum()).getBytes(StandardCharsets.US_ASCII) : new byte[0]; //$NON-NLS-1$ //$NON-NLS-2$
 		_pZipStatus = lTrrntzip ? EnumSet.of(ZipStatus.TrrntZip) : EnumSet.noneOf(ZipStatus.class);
 
 		if (_zip64)
@@ -1296,7 +1298,7 @@ public final class ZipFile implements ICompress
 			// check if the ZIP has a valid TorrentZip file comment
 			if (_fileComment.length == 22)
 			{
-				if (new String(_fileComment, Charset.forName("Cp437")).substring(0, 14).equals("TORRENTZIPPED-")) //$NON-NLS-1$ //$NON-NLS-2$
+				if (new String(_fileComment, StandardCharsets.US_ASCII).substring(0, 14).equals("TORRENTZIPPED-")) //$NON-NLS-1$ //$NON-NLS-2$
 				{
 					byte[] buffer = new byte[_centerDirSize.intValue()];
 					_esbc.position(_centerDirStart.longValue());
@@ -1304,7 +1306,7 @@ public final class ZipFile implements ICompress
 					_esbc.get(buffer);
 					long r = _esbc.endChecksum();
 
-					String tcrc = new String(_fileComment, Charset.forName("Cp437")).substring(14, 22); //$NON-NLS-1$
+					String tcrc = new String(_fileComment, StandardCharsets.US_ASCII).substring(14, 22); //$NON-NLS-1$
 					String zcrc = String.format("%08X", r); //$NON-NLS-1$
 					if (tcrc.equalsIgnoreCase(zcrc))
 						trrntzip = true;
