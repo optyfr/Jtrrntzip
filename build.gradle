@@ -1,7 +1,13 @@
+plugins {
+	id 'java' 
+	id "org.beryx.jlink" version "2.21.2"
+	id "org.javamodularity.moduleplugin" version "1.7.0"
+}
 apply plugin: 'java'
 sourceCompatibility = 11
 targetCompatibility = 11
 apply plugin: 'eclipse'
+apply plugin: 'org.javamodularity.moduleplugin'
 
 def props = new Properties()
 file("dist/ver.properties").withInputStream { props.load(it) }
@@ -10,6 +16,10 @@ version = props.getProperty("Specification-Version")+props.getProperty("Implemen
 
 repositories {
 	mavenCentral()
+}
+
+java {
+	modularity.inferModulePath.set(true)
 }
 
 dependencies {
@@ -45,7 +55,7 @@ jar {
 	}
 }
 
-task distZip(type: Zip, dependsOn: jar) {
+task distZip2(type: Zip, dependsOn: jar) {
 	from (configurations.compile) {
 		into('lib')
 	}
@@ -59,4 +69,4 @@ task distZip(type: Zip, dependsOn: jar) {
 	destinationDir = file("$buildDir/distributions/")
 }
 
-assemble.dependsOn distZip
+assemble.dependsOn distZip2
