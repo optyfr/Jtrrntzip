@@ -118,7 +118,7 @@ public final class EnhancedSeekableByteChannel extends UnsignedTypes implements 
 
 	public final byte get() throws IOException
 	{
-		final ByteBuffer bb = ByteBuffer.allocate(1);
+		final var bb = ByteBuffer.allocate(1);
 		read(bb);
 		if(checksum != null)
 			checksum.update(bb.get());
@@ -127,7 +127,7 @@ public final class EnhancedSeekableByteChannel extends UnsignedTypes implements 
 
 	public final EnhancedSeekableByteChannel get(final byte[] dst) throws IOException
 	{
-		final ByteBuffer bb = ByteBuffer.allocate(dst.length);
+		final var bb = ByteBuffer.allocate(dst.length);
 		read(bb);
 		bb.rewind();
 		bb.get(dst);
@@ -138,7 +138,7 @@ public final class EnhancedSeekableByteChannel extends UnsignedTypes implements 
 
 	public final EnhancedSeekableByteChannel get(final byte[] dst, final int offset, final int len) throws IOException
 	{
-		final ByteBuffer bb = ByteBuffer.allocate(len);
+		final var bb = ByteBuffer.allocate(len);
 		read(bb);
 		bb.rewind();
 		bb.get(dst, offset, len);
