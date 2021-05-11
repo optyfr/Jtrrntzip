@@ -5,6 +5,11 @@ import java.util.List;
 
 public class TorrentZipCheck
 {
+	private TorrentZipCheck()
+	{
+		throw new IllegalStateException("Utility class");
+	}
+
 	public static EnumSet<TrrntZipStatus> CheckZipFiles(final List<ZippedFile> zippedFiles, final LogCallback StatusLogCallBack)
 	{
 		final EnumSet<TrrntZipStatus> tzStatus = EnumSet.noneOf(TrrntZipStatus.class);
@@ -15,12 +20,12 @@ public class TorrentZipCheck
 		// check if any '\' = 92 need converted to '/' = 47
 		// this needs done before the sort, so that the sort is correct.
 		// return BadDirectorySeparator if errors found.
-		boolean error1 = false;
+		var error1 = false;
 		for(final ZippedFile t : zippedFiles)
 		{
 			final char[] bytes = t.Name.toCharArray();
-			boolean fixDir = false;
-			for(int j = 0; j < bytes.length; j++)
+			var fixDir = false;
+			for(var j = 0; j < bytes.length; j++)
 			{
 				if(bytes[j] != '\\')
 					continue;
@@ -41,18 +46,17 @@ public class TorrentZipCheck
 		// All Files in a torrentzip should be sorted with a lower case file compare.
 		//
 		// if needed sort the files correctly, and return Unsorted if errors found.
-		boolean error2 = false;
-		boolean thisSortFound = true;
+		var error2 = false;
+		var thisSortFound = true;
 		while(thisSortFound)
 		{
 			thisSortFound = false;
-			for(int i = 0; i < zippedFiles.size() - 1; i++)
+			for(var i = 0; i < zippedFiles.size() - 1; i++)
 			{
-				// int c = TrrntZipStringCompare(zippedFiles.get(i).Name, zippedFiles.get(i+1).Name);
 				final int c = zippedFiles.get(i).Name.compareToIgnoreCase(zippedFiles.get(i + 1).Name);
 				if(c > 0)
 				{
-					final ZippedFile T = zippedFiles.get(i);
+					final var T = zippedFiles.get(i);
 					zippedFiles.set(i, zippedFiles.get(i + 1));
 					zippedFiles.set(i + 1, T);
 
@@ -77,8 +81,8 @@ public class TorrentZipCheck
 		// If we find this 2 entry pattern (directory followed by file in that directory)
 		// then the directory entry should not be present and the torrentzip is incorrect.
 		// return ExtraDirectoryEnteries if error is found.
-		boolean error3 = false;
-		for(int i = 0; i < zippedFiles.size() - 1; i++)
+		var error3 = false;
+		for(var i = 0; i < zippedFiles.size() - 1; i++)
 		{
 			// check if this is a directory entry
 			if(zippedFiles.get(i).Name.charAt(zippedFiles.get(i).Name.length() - 1) != '/')
@@ -91,8 +95,8 @@ public class TorrentZipCheck
 
 			// check if the directory part of the two file enteries match
 			// if they do we found an incorrect directory entry.
-			boolean delete = true;
-			for(int j = 0; j < zippedFiles.get(i).Name.length(); j++)
+			var delete = true;
+			for(var j = 0; j < zippedFiles.get(i).Name.length(); j++)
 			{
 				if(zippedFiles.get(i).Name.charAt(j) != zippedFiles.get(i + 1).Name.charAt(j))
 				{
@@ -117,8 +121,8 @@ public class TorrentZipCheck
 		}
 
 		// check for repeat files
-		boolean error4 = false;
-		for(int i = 0; i < zippedFiles.size() - 1; i++)
+		var error4 = false;
+		for(var i = 0; i < zippedFiles.size() - 1; i++)
 		{
 			if(zippedFiles.get(i).Name.equals(zippedFiles.get(i + 1).Name))
 			{

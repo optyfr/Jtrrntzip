@@ -15,7 +15,7 @@ public class ZippedFile
 
 	public final byte[] getCRC()
 	{
-		final ByteBuffer bb = ByteBuffer.allocate(4);
+		final var bb = ByteBuffer.allocate(4);
 		bb.order(ByteOrder.LITTLE_ENDIAN);
 		bb.putInt(CRC);
 		return bb.array();

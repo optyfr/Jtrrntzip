@@ -120,7 +120,7 @@ public final class Program extends AbstractTorrentZipOptions implements LogCallb
 	@Override
 	public final void StatusLogCallBack(final String log)
 	{
-		System.out.format("%s\n", log); //$NON-NLS-1$
+		System.out.format("%s%n", log); //$NON-NLS-1$
 	}
 
 	@Override

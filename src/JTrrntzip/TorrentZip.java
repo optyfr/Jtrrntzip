@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import JTrrntzip.SupportedFiles.ICompress;
@@ -24,7 +25,7 @@ public final class TorrentZip
 		buffer = new byte[8 * 1024];
 	}
 
-	public final EnumSet<TrrntZipStatus> Process(final File f) throws IOException
+	public final Set<TrrntZipStatus> Process(final File f) throws IOException
 	{
 		if(statusLogCallBack.isVerboseLogging())
 			statusLogCallBack.StatusLogCallBack(""); //$NON-NLS-1$
@@ -64,8 +65,7 @@ public final class TorrentZip
 			return tzs;
 		}
 		statusLogCallBack.StatusLogCallBack(Messages.getString("TorrentZip.TorrentZipping")); //$NON-NLS-1$
-		final EnumSet<TrrntZipStatus> fixedTzs = TorrentZipRebuild.ReZipFiles(zippedFiles, zipFile.get(), buffer, statusLogCallBack);
-		return fixedTzs;
+		return TorrentZipRebuild.ReZipFiles(zippedFiles, zipFile.get(), buffer, statusLogCallBack);
 	}
 
 	private final EnumSet<TrrntZipStatus> OpenZip(final File f, final AtomicReference<ICompress> zipFile) throws IOException
@@ -75,7 +75,6 @@ public final class TorrentZip
 		final ZipReturn zr = zipFile.get().ZipFileOpen(f, f.lastModified(), true);
 		if(zr != ZipReturn.ZipGood)
 		{
-			//System.out.println(zr);
 			return EnumSet.of(TrrntZipStatus.CorruptZip);
 		}
 
@@ -91,18 +90,15 @@ public final class TorrentZip
 	private final List<ZippedFile> ReadZipContent(final ICompress zipFile)
 	{
 		final List<ZippedFile> zippedFiles = new ArrayList<>();
-		for(int i = 0; i < zipFile.LocalFilesCount(); i++)
+		for(var i = 0; i < zipFile.LocalFilesCount(); i++)
 		{
 			final int ii = i;
-			zippedFiles.add(new ZippedFile()
-			{
-				{
-					Index = ii;
-					Name = zipFile.Filename(ii);
-					setCRC(zipFile.CRC32(ii));
-					Size = zipFile.UncompressedSize(ii);
-				}
-			});
+			final var zf = new ZippedFile();
+			zf.Index = ii;
+			zf.Name = zipFile.Filename(ii);
+			zf.setCRC(zipFile.CRC32(ii));
+			zf.Size = zipFile.UncompressedSize(ii);
+			zippedFiles.add(zf);
 		}
 		return zippedFiles;
 	}
