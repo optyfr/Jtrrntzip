@@ -46,7 +46,7 @@ public final class Program extends AbstractTorrentZipOptions implements LogCallb
 					}
 					catch(final IOException e)
 					{
-						e.printStackTrace();
+						System.err.println(e.getMessage());
 					}
 					continue;
 				}
@@ -70,14 +70,14 @@ public final class Program extends AbstractTorrentZipOptions implements LogCallb
 							}
 							catch(final IOException e)
 							{
-								e.printStackTrace();
+								System.err.println(e.getMessage());
 							}
 						}
 					});
 				}
 				catch(final IOException e)
 				{
-					e.printStackTrace();
+					System.err.println(e.getMessage());
 				}
 			}
 		}

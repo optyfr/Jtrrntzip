@@ -54,7 +54,7 @@ public final class TorrentZipRebuild
 				}
 				catch (final IOException e1)
 				{
-					e1.printStackTrace();
+					System.err.println(e1.getMessage());
 				}
 			});
 			return EnumSet.of(TrrntZipStatus.CorruptZip);

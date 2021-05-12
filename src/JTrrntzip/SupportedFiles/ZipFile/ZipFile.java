@@ -259,7 +259,7 @@ public final class ZipFile implements ICompress
 			}
 			catch (Exception e)
 			{
-				e.printStackTrace();
+				System.err.println(e.getMessage());
 				return ZipReturn.ZipCentralDirError;
 			}
 
@@ -515,7 +515,7 @@ public final class ZipFile implements ICompress
 			}
 			catch (Exception e)
 			{
-				e.printStackTrace();
+				System.err.println(e.getMessage());
 				return ZipReturn.ZipLocalFileHeaderError;
 			}
 
@@ -600,7 +600,7 @@ public final class ZipFile implements ICompress
 			}
 			catch (Exception e)
 			{
-				e.printStackTrace();
+				System.err.println(e.getMessage());
 				return ZipReturn.ZipLocalFileHeaderError;
 			}
 
@@ -610,8 +610,6 @@ public final class ZipFile implements ICompress
 		{
 			List<Byte> extraField = new ArrayList<>();
 			zip64 = _uncompressedSize.compareTo(BigInteger.valueOf(0xffffffffL)) >= 0;
-			if (zip64)
-				new Exception().printStackTrace();
 
 			byte[] bFileName;
 
@@ -883,7 +881,7 @@ public final class ZipFile implements ICompress
 			}
 			catch (IOException e)
 			{
-				e.printStackTrace();
+				System.err.println(e.getMessage());
 			}
 		}
 	}
@@ -1189,7 +1187,7 @@ public final class ZipFile implements ICompress
 		}
 
 		close();
-		_zipFileInfo.delete();
+		Files.deleteIfExists(_zipFileInfo.toPath());
 		_zipFileInfo = null;
 		zipOpen = ZipOpenType.Closed;
 	}
@@ -1388,7 +1386,7 @@ public final class ZipFile implements ICompress
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			System.err.println(e.getMessage());
 			ZipFileClose();
 			return ZipReturn.ZipErrorReadingFile;
 		}
