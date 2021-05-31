@@ -55,13 +55,13 @@ public final class TorrentZip
 		if(tzs.contains(TrrntZipStatus.ValidTrrntzip) && !options.isForceRezip())
 		{
 			statusLogCallBack.StatusLogCallBack(Messages.getString("TorrentZip.SkippingFile")); //$NON-NLS-1$
-			zipFile.get().ZipFileClose();
+			zipFile.get().zipFileClose();
 			return tzs;
 		}
 		if(options.isCheckOnly())
 		{
 			statusLogCallBack.StatusLogCallBack(tzs.toString());
-			zipFile.get().ZipFileClose();
+			zipFile.get().zipFileClose();
 			return tzs;
 		}
 		statusLogCallBack.StatusLogCallBack(Messages.getString("TorrentZip.TorrentZipping")); //$NON-NLS-1$
@@ -72,7 +72,7 @@ public final class TorrentZip
 	{
 		zipFile.set(new ZipFile());
 
-		final ZipReturn zr = zipFile.get().ZipFileOpen(f, f.lastModified(), true);
+		final ZipReturn zr = zipFile.get().zipFileOpen(f, f.lastModified(), true);
 		if(zr != ZipReturn.ZipGood)
 		{
 			return EnumSet.of(TrrntZipStatus.CorruptZip);
@@ -81,7 +81,7 @@ public final class TorrentZip
 		final EnumSet<TrrntZipStatus> tzStatus = EnumSet.noneOf(TrrntZipStatus.class);
 
 		// first check if the file is a trrntip files
-		if(zipFile.get().ZipStatus().contains(ZipStatus.TrrntZip))
+		if(zipFile.get().zipStatus().contains(ZipStatus.TrrntZip))
 			tzStatus.add(TrrntZipStatus.ValidTrrntzip);
 
 		return tzStatus;
@@ -90,14 +90,14 @@ public final class TorrentZip
 	private final List<ZippedFile> ReadZipContent(final ICompress zipFile)
 	{
 		final List<ZippedFile> zippedFiles = new ArrayList<>();
-		for(var i = 0; i < zipFile.LocalFilesCount(); i++)
+		for(var i = 0; i < zipFile.localFilesCount(); i++)
 		{
 			final int ii = i;
 			final var zf = new ZippedFile();
-			zf.Index = ii;
-			zf.Name = zipFile.Filename(ii);
-			zf.setCRC(zipFile.CRC32(ii));
-			zf.Size = zipFile.UncompressedSize(ii);
+			zf.setIndex(ii);
+			zf.setName(zipFile.filename(ii));
+			zf.setCRC(zipFile.crc32(ii));
+			zf.setSize(zipFile.uncompressedSize(ii));
 			zippedFiles.add(zf);
 		}
 		return zippedFiles;

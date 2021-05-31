@@ -14,43 +14,43 @@ import JTrrntzip.ZipStatus;
 
 public interface ICompress extends Closeable, AutoCloseable
 {
-	int LocalFilesCount();
+	int localFilesCount();
 
-	String Filename(int i);
+	String filename(int i);
 
-	BigInteger LocalHeader(int i);
+	BigInteger localHeader(int i);
 
-	BigInteger UncompressedSize(int i);
+	BigInteger uncompressedSize(int i);
 
-	byte[] CRC32(int i);
+	byte[] crc32(int i);
 
-	ZipReturn FileStatus(int i);
+	ZipReturn fileStatus(int i);
 
-	ZipOpenType ZipOpen();
+	ZipOpenType zipOpen();
 
-	ZipReturn ZipFileOpen(File newFilename, long timestamp, boolean readHeaders) throws IOException;
+	ZipReturn zipFileOpen(File newFilename, long timestamp, boolean readHeaders) throws IOException;
 
-	void ZipFileClose() throws IOException;
+	void zipFileClose() throws IOException;
 
-	ZipReturn ZipFileOpenWriteStream(boolean raw, boolean trrntzip, String filename, BigInteger uncompressedSize, short compressionMethod, AtomicReference<OutputStream> stream) throws IOException;
+	ZipReturn zipFileOpenWriteStream(boolean raw, boolean trrntzip, String filename, BigInteger uncompressedSize, short compressionMethod, AtomicReference<OutputStream> stream) throws IOException;
 
-	ZipReturn ZipFileCloseReadStream() throws IOException;
+	ZipReturn zipFileCloseReadStream() throws IOException;
 
-	void DeepScan();
+	void deepScan();
 
-	EnumSet<ZipStatus> ZipStatus();
+	EnumSet<ZipStatus> zipStatus();
 
-	String ZipFilename();
+	String zipFilename();
 
-	long TimeStamp();
+	long timeStamp();
 
-	void ZipFileAddDirectory() throws IOException;
+	void zipFileAddDirectory() throws IOException;
 
-	ZipReturn ZipFileCreate(File newFilename) throws IOException;
+	ZipReturn zipFileCreate(File newFilename) throws IOException;
 
-	ZipReturn ZipFileCloseWriteStream(byte[] crc32) throws IOException;
+	ZipReturn zipFileCloseWriteStream(byte[] crc32) throws IOException;
 
-	ZipReturn ZipFileRollBack() throws IOException;
+	ZipReturn zipFileRollBack() throws IOException;
 
-	void ZipFileCloseFailed() throws IOException;
+	void zipFileCloseFailed() throws IOException;
 }

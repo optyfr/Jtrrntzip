@@ -2,6 +2,7 @@ package JTrrntzip;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 public class TorrentZipCheck
 {
@@ -10,7 +11,7 @@ public class TorrentZipCheck
 		throw new IllegalStateException("Utility class");
 	}
 
-	public static EnumSet<TrrntZipStatus> CheckZipFiles(final List<ZippedFile> zippedFiles, final LogCallback StatusLogCallBack)
+	public static Set<TrrntZipStatus> CheckZipFiles(final List<ZippedFile> zippedFiles, final LogCallback StatusLogCallBack)
 	{
 		final EnumSet<TrrntZipStatus> tzStatus = EnumSet.noneOf(TrrntZipStatus.class);
 
@@ -23,7 +24,7 @@ public class TorrentZipCheck
 		var error1 = false;
 		for(final ZippedFile t : zippedFiles)
 		{
-			final char[] bytes = t.Name.toCharArray();
+			final char[] bytes = t.getName().toCharArray();
 			var fixDir = false;
 			for(var j = 0; j < bytes.length; j++)
 			{
@@ -39,7 +40,7 @@ public class TorrentZipCheck
 				}
 			}
 			if(fixDir)
-				t.Name = new String(bytes);
+				t.setName(new String(bytes));
 		}
 
 		// ***************************** RULE 2 *************************************
@@ -53,12 +54,12 @@ public class TorrentZipCheck
 			thisSortFound = false;
 			for(var i = 0; i < zippedFiles.size() - 1; i++)
 			{
-				final int c = zippedFiles.get(i).Name.compareToIgnoreCase(zippedFiles.get(i + 1).Name);
+				final int c = zippedFiles.get(i).getName().compareToIgnoreCase(zippedFiles.get(i + 1).getName());
 				if(c > 0)
 				{
-					final var T = zippedFiles.get(i);
+					final var zf = zippedFiles.get(i);
 					zippedFiles.set(i, zippedFiles.get(i + 1));
-					zippedFiles.set(i + 1, T);
+					zippedFiles.set(i + 1, zf);
 
 					tzStatus.add(TrrntZipStatus.Unsorted);
 					thisSortFound = true;
@@ -85,20 +86,20 @@ public class TorrentZipCheck
 		for(var i = 0; i < zippedFiles.size() - 1; i++)
 		{
 			// check if this is a directory entry
-			if(zippedFiles.get(i).Name.charAt(zippedFiles.get(i).Name.length() - 1) != '/')
+			if(zippedFiles.get(i).getName().charAt(zippedFiles.get(i).getName().length() - 1) != '/')
 				continue;
 
 			// check if the next filename is shorter or equal to this filename.
 			// if it is shorter or equal it cannot be a file in the directory.
-			if(zippedFiles.get(i + 1).Name.length() <= zippedFiles.get(i).Name.length())
+			if(zippedFiles.get(i + 1).getName().length() <= zippedFiles.get(i).getName().length())
 				continue;
 
 			// check if the directory part of the two file enteries match
 			// if they do we found an incorrect directory entry.
 			var delete = true;
-			for(var j = 0; j < zippedFiles.get(i).Name.length(); j++)
+			for(var j = 0; j < zippedFiles.get(i).getName().length(); j++)
 			{
-				if(zippedFiles.get(i).Name.charAt(j) != zippedFiles.get(i + 1).Name.charAt(j))
+				if(zippedFiles.get(i).getName().charAt(j) != zippedFiles.get(i + 1).getName().charAt(j))
 				{
 					delete = false;
 					break;
@@ -124,7 +125,7 @@ public class TorrentZipCheck
 		var error4 = false;
 		for(var i = 0; i < zippedFiles.size() - 1; i++)
 		{
-			if(zippedFiles.get(i).Name.equals(zippedFiles.get(i + 1).Name))
+			if(zippedFiles.get(i).getName().equals(zippedFiles.get(i + 1).getName()))
 			{
 				tzStatus.add(TrrntZipStatus.RepeatFilesFound);
 				if(!error4 && StatusLogCallBack.isVerboseLogging())

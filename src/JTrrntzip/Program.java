@@ -32,7 +32,7 @@ public final class Program extends AbstractTorrentZipOptions implements LogCallb
 	{
 		super(args);
 
-		if(argfiles != null && argfiles.size() > 0)
+		if(argfiles != null && !argfiles.isEmpty())
 		{
 			tz = new TorrentZip(this, this);
 			for(final File argfile : argfiles)
@@ -42,7 +42,7 @@ public final class Program extends AbstractTorrentZipOptions implements LogCallb
 				{
 					try
 					{
-						ProcessDir(argfile);
+						processDir(argfile);
 					}
 					catch(final IOException e)
 					{
@@ -66,7 +66,7 @@ public final class Program extends AbstractTorrentZipOptions implements LogCallb
 						{
 							try
 							{
-								ProcessFile(path.toFile());
+								processFile(path.toFile());
 							}
 							catch(final IOException e)
 							{
@@ -81,14 +81,17 @@ public final class Program extends AbstractTorrentZipOptions implements LogCallb
 				}
 			}
 		}
-		if(_guiLaunch)
+		if(guiLaunch)
 		{
 			System.out.format(Messages.getString("Program.Complete")); //$NON-NLS-1$
-			new Scanner(System.in).nextLine();
+			try(final var scanner = new Scanner(System.in))
+			{
+				scanner.nextLine();
+			}
 		}
 	}
 
-	private void ProcessDir(final File dir) throws IOException
+	private void processDir(final File dir) throws IOException
 	{
 		if(isVerboseLogging())
 			System.out.println(Messages.getString("Program.CheckingDir") + dir); //$NON-NLS-1$
@@ -98,8 +101,8 @@ public final class Program extends AbstractTorrentZipOptions implements LogCallb
 		{
 			if(f.isDirectory())
 			{
-				if(!NoRecursion)
-					ProcessDir(f);
+				if(!noRecursion)
+					processDir(f);
 			}
 			else
 			{
@@ -112,7 +115,7 @@ public final class Program extends AbstractTorrentZipOptions implements LogCallb
 		}
 	}
 
-	private void ProcessFile(final File file) throws IOException
+	private void processFile(final File file) throws IOException
 	{
 		tz.Process(file);
 	}
@@ -132,7 +135,7 @@ public final class Program extends AbstractTorrentZipOptions implements LogCallb
 	@Override
 	public final boolean isVerboseLogging()
 	{
-		return VerboseLogging;
+		return verboseLogging;
 	}
 
 }

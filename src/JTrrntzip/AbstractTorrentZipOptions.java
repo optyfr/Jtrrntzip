@@ -6,23 +6,23 @@ import java.util.List;
 
 public class AbstractTorrentZipOptions implements TorrentZipOptions
 {
-	protected boolean NoRecursion = false;
-	protected boolean ForceReZip = false;
-	protected boolean CheckOnly = false;
-	protected boolean VerboseLogging = false;
-	protected boolean _guiLaunch = false;
+	protected boolean noRecursion = false;
+	protected boolean forceReZip = false;
+	protected boolean checkOnly = false;
+	protected boolean verboseLogging = false;
+	protected boolean guiLaunch = false;
 
 	protected List<File> argfiles = null;
 
 	public AbstractTorrentZipOptions(final String[] args)
 	{
-		final List<File> argfiles = new ArrayList<>();
+		final List<File> argfls = new ArrayList<>();
 		for(final String arg : args)
 		{
 			switch(arg)
 			{
 				case "-?": //$NON-NLS-1$
-					System.out.format("Jtrrntzip v%s\n", Program.class.getPackage().getSpecificationVersion()); //$NON-NLS-1$
+					System.out.format("Jtrrntzip v%s%n", Program.class.getPackage().getSpecificationVersion()); //$NON-NLS-1$
 					System.out.println(Messages.getString("AbstractTorrentZipOptions.Copyright")); //$NON-NLS-1$
 					System.out.println(Messages.getString("AbstractTorrentZipOptions.BasedOnTrrntzipDN")); //$NON-NLS-1$
 					System.out.println(Messages.getString("AbstractTorrentZipOptions.Usage")); //$NON-NLS-1$
@@ -36,41 +36,41 @@ public class AbstractTorrentZipOptions implements TorrentZipOptions
 					System.out.println(Messages.getString("AbstractTorrentZipOptions.PauseWhenFinished")); //$NON-NLS-1$
 					return;
 				case "-s": //$NON-NLS-1$
-					NoRecursion = true;
+					noRecursion = true;
 					break;
 				case "-f": //$NON-NLS-1$
-					ForceReZip = true;
+					forceReZip = true;
 					break;
 				case "-c": //$NON-NLS-1$
-					CheckOnly = true;
+					checkOnly = true;
 					break;
 				case "-l": //$NON-NLS-1$
-					VerboseLogging = true;
+					verboseLogging = true;
 					break;
 				case "-v": //$NON-NLS-1$
 					System.out.format("TorrentZip v%s", Program.class.getPackage().getSpecificationVersion()); //$NON-NLS-1$
 					return;
 				case "-g": //$NON-NLS-1$
-					_guiLaunch = true;
+					guiLaunch = true;
 					break;
 				default:
-					argfiles.add(new File(arg));
+					argfls.add(new File(arg));
 					break;
 			}
 		}
-		this.argfiles = argfiles;
+		this.argfiles = argfls;
 	}
 
 	@Override
 	public boolean isForceRezip()
 	{
-		return ForceReZip;
+		return forceReZip;
 	}
 
 	@Override
 	public boolean isCheckOnly()
 	{
-		return CheckOnly;
+		return checkOnly;
 	}
 
 }

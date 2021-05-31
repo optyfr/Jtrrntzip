@@ -2,7 +2,7 @@ package JTrrntzip.SupportedFiles;
 
 import java.math.BigInteger;
 
-public abstract class UnsignedTypes
+public interface UnsignedTypes
 {
 	public static long fromULong(final BigInteger bi)
 	{

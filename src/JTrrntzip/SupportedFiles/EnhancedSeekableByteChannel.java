@@ -12,7 +12,7 @@ import java.nio.channels.SeekableByteChannel;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
-public final class EnhancedSeekableByteChannel extends UnsignedTypes implements SeekableByteChannel, Closeable, AutoCloseable
+public final class EnhancedSeekableByteChannel implements UnsignedTypes, SeekableByteChannel, Closeable, AutoCloseable
 {
 	private final SeekableByteChannel sbc;
 	private ByteOrder bo;
