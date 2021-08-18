@@ -86,12 +86,12 @@ public final class TorrentZipRebuild
 				// by now the zippedFiles have been sorted so just loop over them
 				for (var i = 0; i < zippedFiles.size(); i++)
 				{
-					LogCallback.StatusCallBack((int) ((double) (i + 1) / (zippedFiles.size()) * 100));
+					LogCallback.statusCallBack((int) ((double) (i + 1) / (zippedFiles.size()) * 100));
 
 					final var t = zippedFiles.get(i);
 
 					if (LogCallback.isVerboseLogging())
-						LogCallback.StatusLogCallBack(String.format("%15s %s %s", t.getSize(), t.toString(), t.getName())); //$NON-NLS-1$
+						LogCallback.statusLogCallBack(String.format("%15s %s %s", t.getSize(), t.toString(), t.getName())); //$NON-NLS-1$
 
 					final AtomicReference<InputStream> readStream = new AtomicReference<>();
 					final AtomicReference<BigInteger> streamSize = new AtomicReference<>();

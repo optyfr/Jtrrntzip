@@ -7,7 +7,7 @@ public class DummyLogCallback implements LogCallback
 	}
 
 	@Override
-	public void StatusCallBack(final int percent)
+	public void statusCallBack(final int percent)
 	{
 	}
 
@@ -18,7 +18,7 @@ public class DummyLogCallback implements LogCallback
 	}
 
 	@Override
-	public void StatusLogCallBack(final String log)
+	public void statusLogCallBack(final String log)
 	{
 	}
 

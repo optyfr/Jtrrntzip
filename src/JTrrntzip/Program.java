@@ -121,13 +121,13 @@ public final class Program extends AbstractTorrentZipOptions implements LogCallb
 	}
 
 	@Override
-	public final void StatusLogCallBack(final String log)
+	public final void statusLogCallBack(final String log)
 	{
 		System.out.format("%s%n", log); //$NON-NLS-1$
 	}
 
 	@Override
-	public final void StatusCallBack(final int percent)
+	public final void statusCallBack(final int percent)
 	{
 		System.out.format("%03d%% ", percent); //$NON-NLS-1$
 	}

@@ -36,7 +36,7 @@ public class TorrentZipCheck
 				if(!error1 && StatusLogCallBack.isVerboseLogging())
 				{
 					error1 = true;
-					StatusLogCallBack.StatusLogCallBack(Messages.getString("TorrentZipCheck.IncorrectDirectorySeparatoreFound")); //$NON-NLS-1$
+					StatusLogCallBack.statusLogCallBack(Messages.getString("TorrentZipCheck.IncorrectDirectorySeparatoreFound")); //$NON-NLS-1$
 				}
 			}
 			if(fixDir)
@@ -66,7 +66,7 @@ public class TorrentZipCheck
 					if(!error2 && StatusLogCallBack.isVerboseLogging())
 					{
 						error2 = true;
-						StatusLogCallBack.StatusLogCallBack(Messages.getString("TorrentZipCheck.IncorrectFileOrderFound")); //$NON-NLS-1$
+						StatusLogCallBack.statusLogCallBack(Messages.getString("TorrentZipCheck.IncorrectFileOrderFound")); //$NON-NLS-1$
 					}
 
 				}
@@ -114,7 +114,7 @@ public class TorrentZipCheck
 				if(!error3 && StatusLogCallBack.isVerboseLogging())
 				{
 					error3 = true;
-					StatusLogCallBack.StatusLogCallBack(Messages.getString("TorrentZipCheck.UnneededDirectoryRecordsFound")); //$NON-NLS-1$
+					StatusLogCallBack.statusLogCallBack(Messages.getString("TorrentZipCheck.UnneededDirectoryRecordsFound")); //$NON-NLS-1$
 				}
 
 				i--;
@@ -131,7 +131,7 @@ public class TorrentZipCheck
 				if(!error4 && StatusLogCallBack.isVerboseLogging())
 				{
 					error4 = true;
-					StatusLogCallBack.StatusLogCallBack(Messages.getString("TorrentZipCheck.DuplicateFileEntriesFound")); //$NON-NLS-1$
+					StatusLogCallBack.statusLogCallBack(Messages.getString("TorrentZipCheck.DuplicateFileEntriesFound")); //$NON-NLS-1$
 				}
 			}
 		}
