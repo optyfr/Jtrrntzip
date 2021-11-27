@@ -91,7 +91,7 @@ jar {
 		    "Specification-Version": props.getProperty("Specification-Version"),
         	"Implementation-Title" : "JTrrntzip",
             "Implementation-Version" : props.getProperty("Implementation-Version"),
-            "Main-Class"           : "JTrrntzip.Program",
+            "Main-Class"           : "jtrrntzip.Program",
             "Class-Path"           : configurations.compileClasspath.collect { 'lib/' + it.getName() }.join(' ')
 		)
 		archiveFileName = project.archivesBaseName + '.jar'

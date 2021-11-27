@@ -57,7 +57,7 @@ public final class TorrentZipRebuild
 					System.err.println(e1.getMessage());
 				}
 			});
-			return EnumSet.of(TrrntZipStatus.CorruptZip);
+			return EnumSet.of(TrrntZipStatus.CORRUPTZIP);
 		}
 
 	}
@@ -97,7 +97,7 @@ public final class TorrentZipRebuild
 					final AtomicReference<BigInteger> streamSize = new AtomicReference<>();
 					final var compMethod = new AtomicInteger();
 
-					ZipReturn zrInput = ZipReturn.ZipUntested;
+					ZipReturn zrInput = ZipReturn.ZIPUNTESTED;
 					ZipFile z = null;
 					if (originalZipFile instanceof ZipFile ozf)
 					{
@@ -108,14 +108,14 @@ public final class TorrentZipRebuild
 					final AtomicReference<OutputStream> writeStream = new AtomicReference<>();
 					final ZipReturn zrOutput = zipFileOut.zipFileOpenWriteStream(false, true, t.getName(), streamSize.get(), (short) 8, writeStream);
 
-					if (zrInput != ZipReturn.ZipGood || zrOutput != ZipReturn.ZipGood)
+					if (zrInput != ZipReturn.ZIPGOOD || zrOutput != ZipReturn.ZIPGOOD)
 					{
 						// Error writing local File.
 						zipFileOut.zipFileClose();
 						zipFileOut.close();
 						originalZipFile.zipFileClose();
 						Files.delete(tmpFilename);
-						return EnumSet.of(TrrntZipStatus.CorruptZip);
+						return EnumSet.of(TrrntZipStatus.CORRUPTZIP);
 					}
 
 					final var crcCs = new CheckedInputStream(readStream.get(), new CRC32());
@@ -140,7 +140,7 @@ public final class TorrentZipRebuild
 					final long crc = crcCs.getChecksum().getValue();
 
 					if ((int) crc != t.getCrc())
-						return EnumSet.of(TrrntZipStatus.CorruptZip);
+						return EnumSet.of(TrrntZipStatus.CORRUPTZIP);
 
 					zipFileOut.zipFileCloseWriteStream(t.getLECRC());
 				}
@@ -160,7 +160,7 @@ public final class TorrentZipRebuild
 			Files.delete(filename);
 		Files.copy(tmpFilename, outfilename, StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
 		Files.delete(tmpFilename);
-		return EnumSet.of(TrrntZipStatus.ValidTrrntzip);
+		return EnumSet.of(TrrntZipStatus.VALIDTRRNTZIP);
 	}
 
 }

@@ -38,7 +38,7 @@ public final class TorrentZip
 		final EnumSet<TrrntZipStatus> tzs = openZip(f, zipFile);
 		// this will return ValidTrrntZip or CorruptZip.
 
-		if(tzs.contains(TrrntZipStatus.CorruptZip))
+		if(tzs.contains(TrrntZipStatus.CORRUPTZIP))
 		{
 			statusLogCallBack.statusLogCallBack(Messages.getString("TorrentZip.ZipFileCorrupt")); //$NON-NLS-1$
 			return tzs;
@@ -52,7 +52,7 @@ public final class TorrentZip
 
 		// if tza is now just 'ValidTrrntzip' the it is fully valid, and nothing needs to be done to it.
 
-		if(tzs.contains(TrrntZipStatus.ValidTrrntzip) && !options.isForceRezip())
+		if(tzs.contains(TrrntZipStatus.VALIDTRRNTZIP) && !options.isForceRezip())
 		{
 			statusLogCallBack.statusLogCallBack(Messages.getString("TorrentZip.SkippingFile")); //$NON-NLS-1$
 			zipFile.get().zipFileClose();
@@ -73,16 +73,16 @@ public final class TorrentZip
 		zipFile.set(new ZipFile());
 
 		final ZipReturn zr = zipFile.get().zipFileOpen(f, f.lastModified(), true);
-		if(zr != ZipReturn.ZipGood)
+		if(zr != ZipReturn.ZIPGOOD)
 		{
-			return EnumSet.of(TrrntZipStatus.CorruptZip);
+			return EnumSet.of(TrrntZipStatus.CORRUPTZIP);
 		}
 
 		final EnumSet<TrrntZipStatus> tzStatus = EnumSet.noneOf(TrrntZipStatus.class);
 
 		// first check if the file is a trrntip files
-		if(zipFile.get().zipStatus().contains(ZipStatus.TrrntZip))
-			tzStatus.add(TrrntZipStatus.ValidTrrntzip);
+		if(zipFile.get().zipStatus().contains(ZipStatus.TRRNTZIP))
+			tzStatus.add(TrrntZipStatus.VALIDTRRNTZIP);
 
 		return tzStatus;
 	}

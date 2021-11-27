@@ -4,11 +4,11 @@ import java.io.Serializable;
 
 public enum TrrntZipStatus implements Serializable
 {
-	ValidTrrntzip,
-	CorruptZip,
-	NotTrrntzipped,
-	BadDirectorySeparator,
-	Unsorted,
-	ExtraDirectoryEntries,
-	RepeatFilesFound;
+	VALIDTRRNTZIP,
+	CORRUPTZIP,
+	NOTTRRNTZIPPED,
+	BADDIRECTORYSEPARATOR,
+	UNSORTED,
+	EXTRADIRECTORYENTRIES,
+	REPEATFILESFOUND;
 }

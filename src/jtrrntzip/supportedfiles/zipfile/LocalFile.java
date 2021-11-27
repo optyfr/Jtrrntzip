@@ -47,7 +47,7 @@ public final class LocalFile implements Closeable, AutoCloseable
 
 	private String fileName;
 
-	private ZipReturn fileStatus = ZipReturn.ZipUntested;
+	private ZipReturn fileStatus = ZipReturn.ZIPUNTESTED;
 	
 
 	private BigInteger relativeOffsetOfLocalHeader; // only in central directory
@@ -165,7 +165,7 @@ public final class LocalFile implements Closeable, AutoCloseable
 
 			final var thisSignature = esbc.getInt();
 			if (thisSignature != ZipFile.CENTRALDIRECTORYHEADERSIGNATURE)
-				return ZipReturn.ZipCentralDirError;
+				return ZipReturn.ZIPCENTRALDIRERROR;
 
 			esbc.getUShort(); // Version Made By
 
@@ -174,7 +174,7 @@ public final class LocalFile implements Closeable, AutoCloseable
 			generalPurposeBitFlag = esbc.getUShort();
 			compressionMethod = esbc.getUShort();
 			if (compressionMethod != 8 && compressionMethod != 0)
-				return ZipReturn.ZipUnsupportedCompression;
+				return ZipReturn.ZIPUNSUPPORTEDCOMPRESSION;
 
 			lastModFileTime = esbc.getUShort();
 			lastModFileDate = esbc.getUShort();
@@ -230,7 +230,7 @@ public final class LocalFile implements Closeable, AutoCloseable
 						final long fCRC = crcTest.getValue();
 
 						if (nameCRC32 != fCRC)
-							return ZipReturn.ZipCentralDirError;
+							return ZipReturn.ZIPCENTRALDIRERROR;
 
 						final int charLen = blockLength - 5;
 
@@ -246,12 +246,12 @@ public final class LocalFile implements Closeable, AutoCloseable
 				}
 			}
 
-			return ZipReturn.ZipGood;
+			return ZipReturn.ZIPGOOD;
 		}
 		catch (Exception e)
 		{
 			System.err.println(e.getMessage());
-			return ZipReturn.ZipCentralDirError;
+			return ZipReturn.ZIPCENTRALDIRERROR;
 		}
 
 	}
@@ -271,7 +271,7 @@ public final class LocalFile implements Closeable, AutoCloseable
 
 	public final void localFileCheck()
 	{
-		if (getFileStatus() != ZipReturn.ZipUntested)
+		if (getFileStatus() != ZipReturn.ZIPUNTESTED)
 			return;
 
 		try
@@ -292,7 +292,7 @@ public final class LocalFile implements Closeable, AutoCloseable
 
 			if (sInput == null)
 			{
-				fileStatus = ZipReturn.ZipErrorGettingDataStream;
+				fileStatus = ZipReturn.ZIPERRORGETTINGDATASTREAM;
 				return;
 			}
 
@@ -324,17 +324,17 @@ public final class LocalFile implements Closeable, AutoCloseable
 
 			if (sizetogo.longValue() > 0)
 			{
-				fileStatus = ZipReturn.ZipDecodeError;
+				fileStatus = ZipReturn.ZIPDECODEERROR;
 				return;
 			}
 
 			byte[] testcrc = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(UnsignedTypes.fromUInt(tcrc32.getValue())).array();
 
-			fileStatus = Arrays.equals(getCrc(), testcrc) ? ZipReturn.ZipGood : ZipReturn.ZipCRCDecodeError;
+			fileStatus = Arrays.equals(getCrc(), testcrc) ? ZipReturn.ZIPGOOD : ZipReturn.ZIPCRCDECODEERROR;
 		}
 		catch (Exception e)
 		{
-			fileStatus = ZipReturn.ZipDecodeError;
+			fileStatus = ZipReturn.ZIPDECODEERROR;
 		}
 	}
 
@@ -346,7 +346,7 @@ public final class LocalFile implements Closeable, AutoCloseable
 			// dfStream.close();
 		}
 		// close();
-		return ZipReturn.ZipGood;
+		return ZipReturn.ZIPGOOD;
 	}
 
 	public final ZipReturn localFileCloseWriteStream(byte[] crc32) throws IOException
@@ -369,7 +369,7 @@ public final class LocalFile implements Closeable, AutoCloseable
 		crc = crc32;
 		writeCompressedSize();
 		// close();
-		return ZipReturn.ZipGood;
+		return ZipReturn.ZIPGOOD;
 	}
 
 	public final ZipReturn localFileHeaderRead()
@@ -381,7 +381,7 @@ public final class LocalFile implements Closeable, AutoCloseable
 			esbc.position(getRelativeOffsetOfLocalHeader().longValueExact());
 			final var thisSignature = esbc.getInt();
 			if (thisSignature != ZipFile.LOCALFILEHEADERSIGNATURE)
-				return ZipReturn.ZipLocalFileHeaderError;
+				return ZipReturn.ZIPLOCALFILEHEADERERROR;
 
 			esbc.getUShort(); // version needed to extract
 			final int generalPurposeBitFlagLocal = esbc.getUShort();
@@ -390,35 +390,35 @@ public final class LocalFile implements Closeable, AutoCloseable
 
 			int tshort = esbc.getUShort();
 			if (tshort != compressionMethod)
-				return ZipReturn.ZipLocalFileHeaderError;
+				return ZipReturn.ZIPLOCALFILEHEADERERROR;
 
 			tshort = esbc.getUShort();
 			if (tshort != lastModFileTime)
-				return ZipReturn.ZipLocalFileHeaderError;
+				return ZipReturn.ZIPLOCALFILEHEADERERROR;
 
 			tshort = esbc.getUShort();
 			if (tshort != lastModFileDate)
-				return ZipReturn.ZipLocalFileHeaderError;
+				return ZipReturn.ZIPLOCALFILEHEADERERROR;
 
 			byte[] tCRC = readCRC(esbc);
 			if (((getGeneralPurposeBitFlag() & 8) == 0) && !Arrays.equals(tCRC, getCrc()))
-				return ZipReturn.ZipLocalFileHeaderError;
+				return ZipReturn.ZIPLOCALFILEHEADERERROR;
 
 			final long tCompressedSize = esbc.getUInt();
 			if (isZip64() && tCompressedSize != 0xffffffffL && tCompressedSize != compressedSize.longValue()) // if Zip64 File then the compressedSize should be 0xffffffff
-				return ZipReturn.ZipLocalFileHeaderError;
+				return ZipReturn.ZIPLOCALFILEHEADERERROR;
 			if ((getGeneralPurposeBitFlag() & 8) == 8 && tCompressedSize != 0) // if bit 4 set then no compressedSize is set yet
-				return ZipReturn.ZipLocalFileHeaderError;
+				return ZipReturn.ZIPLOCALFILEHEADERERROR;
 			if (!isZip64() && (getGeneralPurposeBitFlag() & 8) != 8 && tCompressedSize != compressedSize.longValue()) // check the compressedSize
-				return ZipReturn.ZipLocalFileHeaderError;
+				return ZipReturn.ZIPLOCALFILEHEADERERROR;
 
 			final long tUnCompressedSize = esbc.getUInt();
 			if (isZip64() && tUnCompressedSize != 0xffffffffL && tUnCompressedSize != getUncompressedSize().longValue()) // if Zip64 File then the unCompressedSize should be 0xffffffff
-				return ZipReturn.ZipLocalFileHeaderError;
+				return ZipReturn.ZIPLOCALFILEHEADERERROR;
 			if ((getGeneralPurposeBitFlag() & 8) == 8 && tUnCompressedSize != 0) // if bit 4 set then no unCompressedSize is set yet
-				return ZipReturn.ZipLocalFileHeaderError;
+				return ZipReturn.ZIPLOCALFILEHEADERERROR;
 			if (!isZip64() && (getGeneralPurposeBitFlag() & 8) != 8 && tUnCompressedSize != getUncompressedSize().longValue()) // check the unCompressedSize
-				return ZipReturn.ZipLocalFileHeaderError;
+				return ZipReturn.ZIPLOCALFILEHEADERERROR;
 
 			final int fileNameLength = esbc.getUShort();
 			final int extraFieldLength = esbc.getUShort();
@@ -445,13 +445,13 @@ public final class LocalFile implements Closeable, AutoCloseable
 						{
 							final BigInteger tLong = UnsignedTypes.toULong(bb.getLong());
 							if (tLong.compareTo(getUncompressedSize()) != 0)
-								return ZipReturn.ZipLocalFileHeaderError;
+								return ZipReturn.ZIPLOCALFILEHEADERERROR;
 						}
 						if (tCompressedSize == 0xffffffffL)
 						{
 							final BigInteger tLong = UnsignedTypes.toULong(bb.getLong());
 							if (tLong.compareTo(compressedSize) != 0)
-								return ZipReturn.ZipLocalFileHeaderError;
+								return ZipReturn.ZIPLOCALFILEHEADERERROR;
 						}
 						break;
 					}
@@ -466,7 +466,7 @@ public final class LocalFile implements Closeable, AutoCloseable
 						final long fCRC = crcTest.getValue();
 
 						if (nameCRC32 != fCRC)
-							return ZipReturn.ZipLocalFileHeaderError;
+							return ZipReturn.ZIPLOCALFILEHEADERERROR;
 
 						final int charLen = blockLength - 5;
 
@@ -483,12 +483,12 @@ public final class LocalFile implements Closeable, AutoCloseable
 			}
 
 			if (!getFileName().equals(tFileName))
-				return ZipReturn.ZipLocalFileHeaderError;
+				return ZipReturn.ZIPLOCALFILEHEADERERROR;
 
 			dataLocation = esbc.position();
 
 			if ((getGeneralPurposeBitFlag() & 8) == 0)
-				return ZipReturn.ZipGood;
+				return ZipReturn.ZIPGOOD;
 
 			esbc.position(esbc.position() + compressedSize.longValue());
 
@@ -497,22 +497,22 @@ public final class LocalFile implements Closeable, AutoCloseable
 				tCRC = readCRC(esbc);
 
 			if (!Arrays.equals(tCRC, getCrc()))
-				return ZipReturn.ZipLocalFileHeaderError;
+				return ZipReturn.ZIPLOCALFILEHEADERERROR;
 
 			long tint = esbc.getUInt();
 			if (tint != compressedSize.longValue())
-				return ZipReturn.ZipLocalFileHeaderError;
+				return ZipReturn.ZIPLOCALFILEHEADERERROR;
 
 			tint = esbc.getUInt();
 			if (tint != getUncompressedSize().longValue())
-				return ZipReturn.ZipLocalFileHeaderError;
+				return ZipReturn.ZIPLOCALFILEHEADERERROR;
 
-			return ZipReturn.ZipGood;
+			return ZipReturn.ZIPGOOD;
 		}
 		catch (Exception e)
 		{
 			System.err.println(e.getMessage());
-			return ZipReturn.ZipLocalFileHeaderError;
+			return ZipReturn.ZIPLOCALFILEHEADERERROR;
 		}
 
 	}
@@ -526,12 +526,12 @@ public final class LocalFile implements Closeable, AutoCloseable
 			esbc.position(getRelativeOffsetOfLocalHeader().longValue());
 			final var thisSignature = esbc.getInt();
 			if (thisSignature != ZipFile.LOCALFILEHEADERSIGNATURE)
-				return ZipReturn.ZipLocalFileHeaderError;
+				return ZipReturn.ZIPLOCALFILEHEADERERROR;
 
 			esbc.getShort(); // version needed to extract
 			generalPurposeBitFlag = esbc.getUShort();
 			if ((getGeneralPurposeBitFlag() & 8) == 8)
-				return ZipReturn.ZipCannotFastOpen;
+				return ZipReturn.ZIPCANNOTFASTOPEN;
 
 			compressionMethod = esbc.getUShort();
 			lastModFileTime = esbc.getUShort();
@@ -579,7 +579,7 @@ public final class LocalFile implements Closeable, AutoCloseable
 						final long fCRC = crcTest.getValue();
 
 						if (nameCRC32 != fCRC)
-							return ZipReturn.ZipLocalFileHeaderError;
+							return ZipReturn.ZIPLOCALFILEHEADERERROR;
 
 						final int charLen = blockLength - 5;
 
@@ -595,13 +595,13 @@ public final class LocalFile implements Closeable, AutoCloseable
 			}
 
 			dataLocation = esbc.position();
-			return ZipReturn.ZipGood;
+			return ZipReturn.ZIPGOOD;
 
 		}
 		catch (Exception e)
 		{
 			System.err.println(e.getMessage());
-			return ZipReturn.ZipLocalFileHeaderError;
+			return ZipReturn.ZIPLOCALFILEHEADERERROR;
 		}
 
 	}
@@ -698,7 +698,7 @@ public final class LocalFile implements Closeable, AutoCloseable
 			}
 		}
 		stream.set(readStream);
-		return stream.get() == null ? ZipReturn.ZipErrorGettingDataStream : ZipReturn.ZipGood;
+		return stream.get() == null ? ZipReturn.ZIPERRORGETTINGDATASTREAM : ZipReturn.ZIPGOOD;
 	}
 
 	public final ZipReturn localFileOpenWriteStream(boolean raw, boolean tZip, BigInteger uSize, int cMethod, AtomicReference<OutputStream> stream, AtomicReference<Deflater> deflater) throws IOException
@@ -733,7 +733,7 @@ public final class LocalFile implements Closeable, AutoCloseable
 		}
 
 		stream.set(writeStream);
-		return stream.get() == null ? ZipReturn.ZipErrorGettingDataStream : ZipReturn.ZipGood;
+		return stream.get() == null ? ZipReturn.ZIPERRORGETTINGDATASTREAM : ZipReturn.ZIPGOOD;
 	}
 
 	public final BigInteger localFilePos()

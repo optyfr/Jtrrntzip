@@ -32,7 +32,7 @@ public class TorrentZipCheck
 					continue;
 				fixDir = true;
 				bytes[j] = '/';
-				tzStatus.add(TrrntZipStatus.BadDirectorySeparator);
+				tzStatus.add(TrrntZipStatus.BADDIRECTORYSEPARATOR);
 				if(!error1 && StatusLogCallBack.isVerboseLogging())
 				{
 					error1 = true;
@@ -61,7 +61,7 @@ public class TorrentZipCheck
 					zippedFiles.set(i, zippedFiles.get(i + 1));
 					zippedFiles.set(i + 1, zf);
 
-					tzStatus.add(TrrntZipStatus.Unsorted);
+					tzStatus.add(TrrntZipStatus.UNSORTED);
 					thisSortFound = true;
 					if(!error2 && StatusLogCallBack.isVerboseLogging())
 					{
@@ -110,7 +110,7 @@ public class TorrentZipCheck
 			if(delete)
 			{
 				zippedFiles.remove(i);
-				tzStatus.add(TrrntZipStatus.ExtraDirectoryEntries);
+				tzStatus.add(TrrntZipStatus.EXTRADIRECTORYENTRIES);
 				if(!error3 && StatusLogCallBack.isVerboseLogging())
 				{
 					error3 = true;
@@ -127,7 +127,7 @@ public class TorrentZipCheck
 		{
 			if(zippedFiles.get(i).getName().equals(zippedFiles.get(i + 1).getName()))
 			{
-				tzStatus.add(TrrntZipStatus.RepeatFilesFound);
+				tzStatus.add(TrrntZipStatus.REPEATFILESFOUND);
 				if(!error4 && StatusLogCallBack.isVerboseLogging())
 				{
 					error4 = true;

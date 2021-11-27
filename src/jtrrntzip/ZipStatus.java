@@ -2,9 +2,9 @@ package jtrrntzip;
 
 public enum ZipStatus
 {
-	None(0x0),
-	TrrntZip(0x1),
-	ExtraData(0x2);
+	NONE(0x0),
+	TRRNTZIP(0x1),
+	EXTRADATA(0x2);
 
 	private int status;
 
