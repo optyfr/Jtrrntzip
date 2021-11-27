@@ -2,13 +2,11 @@ package JTrrntzip;
 
 public class DummyLogCallback implements LogCallback
 {
-	public DummyLogCallback()
-	{
-	}
 
 	@Override
 	public void statusCallBack(final int percent)
 	{
+		// do nothing
 	}
 
 	@Override
@@ -20,6 +18,7 @@ public class DummyLogCallback implements LogCallback
 	@Override
 	public void statusLogCallBack(final String log)
 	{
+		// do nothing
 	}
 
 }

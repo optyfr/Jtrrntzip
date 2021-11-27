@@ -31,7 +31,7 @@ public final class TorrentZipRebuild
 		throw new IllegalStateException("Utility class");
 	}
 
-	public static final Set<TrrntZipStatus> ReZipFiles(final List<ZippedFile> zippedFiles, final ICompress originalZipFile, final byte[] buffer, final LogCallback LogCallback)
+	public static final Set<TrrntZipStatus> reZipFiles(final List<ZippedFile> zippedFiles, final ICompress originalZipFile, final byte[] buffer, final LogCallback logCallback)
 	{
 		if (originalZipFile == null)
 			throw new IllegalArgumentException("original zip file is <null>");
@@ -42,7 +42,7 @@ public final class TorrentZipRebuild
 
 		try
 		{
-			return ReZipFiles(zippedFiles, originalZipFile, buffer, LogCallback, filename, tmpFilename, outfilename);
+			return reZipFiles(zippedFiles, originalZipFile, buffer, logCallback, filename, tmpFilename, outfilename);
 		}
 		catch (final Exception e)
 		{
@@ -66,7 +66,7 @@ public final class TorrentZipRebuild
 	 * @param zippedFiles
 	 * @param originalZipFile
 	 * @param buffer
-	 * @param LogCallback
+	 * @param logCallback
 	 * @param filename
 	 * @param tmpFilename
 	 * @param outfilename
@@ -74,7 +74,7 @@ public final class TorrentZipRebuild
 	 * @throws IOException
 	 * @throws Exception
 	 */
-	private static Set<TrrntZipStatus> ReZipFiles(final List<ZippedFile> zippedFiles, final ICompress originalZipFile, final byte[] buffer, final LogCallback LogCallback, final Path filename, final Path tmpFilename, final Path outfilename) throws IOException, Exception
+	private static Set<TrrntZipStatus> reZipFiles(final List<ZippedFile> zippedFiles, final ICompress originalZipFile, final byte[] buffer, final LogCallback logCallback, final Path filename, final Path tmpFilename, final Path outfilename) throws IOException, Exception
 	{
 		Files.deleteIfExists(tmpFilename);
 		try (ICompress zipFileOut = new ZipFile())
@@ -86,12 +86,12 @@ public final class TorrentZipRebuild
 				// by now the zippedFiles have been sorted so just loop over them
 				for (var i = 0; i < zippedFiles.size(); i++)
 				{
-					LogCallback.statusCallBack((int) ((double) (i + 1) / (zippedFiles.size()) * 100));
+					logCallback.statusCallBack((int) ((double) (i + 1) / (zippedFiles.size()) * 100));
 
 					final var t = zippedFiles.get(i);
 
-					if (LogCallback.isVerboseLogging())
-						LogCallback.statusLogCallBack(String.format("%15s %s %s", t.getSize(), t.toString(), t.getName())); //$NON-NLS-1$
+					if (logCallback.isVerboseLogging())
+						logCallback.statusLogCallBack(String.format("%15s %s %s", t.getSize(), t.toString(), t.getName())); //$NON-NLS-1$
 
 					final AtomicReference<InputStream> readStream = new AtomicReference<>();
 					final AtomicReference<BigInteger> streamSize = new AtomicReference<>();
@@ -99,11 +99,10 @@ public final class TorrentZipRebuild
 
 					ZipReturn zrInput = ZipReturn.ZipUntested;
 					ZipFile z = null;
-					if (originalZipFile instanceof ZipFile)
+					if (originalZipFile instanceof ZipFile ozf)
 					{
-						z = (ZipFile) originalZipFile;
-						if (z != null)
-							zrInput = z.zipFileOpenReadStream(t.getIndex(), false, readStream, streamSize, compMethod);
+						z = ozf;
+						zrInput = z.zipFileOpenReadStream(t.getIndex(), false, readStream, streamSize, compMethod);
 					}
 
 					final AtomicReference<OutputStream> writeStream = new AtomicReference<>();
@@ -132,8 +131,8 @@ public final class TorrentZipRebuild
 						sizetogo = sizetogo.subtract(BigInteger.valueOf(sizenow));
 					}
 					bWriteStream.flush();
-					if (writeStream.get() instanceof DeflaterOutputStream)
-						((DeflaterOutputStream) writeStream.get()).finish();
+					if (writeStream.get() instanceof DeflaterOutputStream ws)
+						ws.finish();
 
 					if (z != null)
 						originalZipFile.zipFileCloseReadStream();

@@ -136,7 +136,7 @@ public final class ZipFile implements ICompress
 	public final void deepScan()
 	{
 		for (LocalFile lfile : localFiles)
-			lfile.LocalFileCheck();
+			lfile.localFileCheck();
 	}
 
 	private final ZipReturn endOfCentralDirRead() throws IOException
@@ -345,7 +345,7 @@ public final class ZipFile implements ICompress
 	@Override
 	public final void zipFileAddDirectory() throws IOException
 	{
-		localFiles.get(localFiles.size() - 1).LocalFileAddDirectory();
+		localFiles.get(localFiles.size() - 1).localFileAddDirectory();
 	}
 
 	@Override
@@ -371,7 +371,7 @@ public final class ZipFile implements ICompress
 		esbc.startChecksum();
 		for (final LocalFile t : localFiles)
 		{
-			t.CenteralDirectoryWrite(esbc);
+			t.centeralDirectoryWrite(esbc);
 			zip64 |= t.isZip64();
 			lTrrntzip &= t.isTrrntZip();
 		}
@@ -417,13 +417,13 @@ public final class ZipFile implements ICompress
 	@Override
 	public final ZipReturn zipFileCloseReadStream() throws IOException
 	{
-		return localFiles.get(readIndex).LocalFileCloseReadStream();
+		return localFiles.get(readIndex).localFileCloseReadStream();
 	}
 
 	@Override
 	public final ZipReturn zipFileCloseWriteStream(byte[] crc32) throws IOException
 	{
-		return localFiles.get(localFiles.size() - 1).LocalFileCloseWriteStream(crc32);
+		return localFiles.get(localFiles.size() - 1).localFileCloseWriteStream(crc32);
 	}
 
 	@Override
@@ -543,7 +543,7 @@ public final class ZipFile implements ICompress
 			for (var i = 0; i < localFilesCount.longValue(); i++)
 			{
 				final var lc = new LocalFile(esbc);
-				zRet = lc.CentralDirectoryRead();
+				zRet = lc.centralDirectoryRead();
 				if (zRet != ZipReturn.ZipGood)
 				{
 					zipFileClose();
@@ -556,7 +556,7 @@ public final class ZipFile implements ICompress
 
 			for (var i = 0; i < localFilesCount.intValue(); i++)
 			{
-				zRet = localFiles.get(i).LocalFileHeaderRead();
+				zRet = localFiles.get(i).localFileHeaderRead();
 				if (zRet != ZipReturn.ZipGood)
 				{
 					zipFileClose();
@@ -621,24 +621,24 @@ public final class ZipFile implements ICompress
 		if (zipOpen != ZipOpenType.OpenRead)
 			return ZipReturn.ZipReadingFromOutputFile;
 
-		ZipReturn zRet = localFiles.get(index).LocalFileHeaderRead();
+		ZipReturn zRet = localFiles.get(index).localFileHeaderRead();
 		if (zRet != ZipReturn.ZipGood)
 		{
 			zipFileClose();
 			return zRet;
 		}
 
-		return localFiles.get(index).LocalFileOpenReadStream(raw, stream, streamSize, compressionMethod, inflater);
+		return localFiles.get(index).localFileOpenReadStream(raw, stream, streamSize, compressionMethod, inflater);
 	}
 
 	public final ZipReturn zipFileOpenReadStreamQuick(BigInteger pos, boolean raw, AtomicReference<InputStream> stream, AtomicReference<BigInteger> streamSize, AtomicInteger compressionMethod) throws IOException
 	{
 		final var tmpFile = new LocalFile(esbc);
-		tmpFile.LocalFilePos(pos);
+		tmpFile.localFilePos(pos);
 
 		localFiles.clear();
 		localFiles.add(tmpFile);
-		ZipReturn zr = tmpFile.LocalFileHeaderReadQuick();
+		ZipReturn zr = tmpFile.localFileHeaderReadQuick();
 		if (zr != ZipReturn.ZipGood)
 		{
 			stream.set(null);
@@ -648,7 +648,7 @@ public final class ZipFile implements ICompress
 		}
 		readIndex = 0;
 
-		return tmpFile.LocalFileOpenReadStream(raw, stream, streamSize, compressionMethod, inflater);
+		return tmpFile.localFileOpenReadStream(raw, stream, streamSize, compressionMethod, inflater);
 	}
 
 	@Override
@@ -660,7 +660,7 @@ public final class ZipFile implements ICompress
 
 		final var lf = new LocalFile(esbc, filename);
 
-		ZipReturn retVal = lf.LocalFileOpenWriteStream(raw, trrntzip, uncompressedSize, compressionMethod, stream, deflater);
+		ZipReturn retVal = lf.localFileOpenWriteStream(raw, trrntzip, uncompressedSize, compressionMethod, stream, deflater);
 
 		localFiles.add(lf);
 
@@ -680,7 +680,7 @@ public final class ZipFile implements ICompress
 		final var lf = localFiles.get(fileCount - 1);
 
 		localFiles.remove(fileCount - 1);
-		esbc.position(lf.LocalFilePos().longValueExact());
+		esbc.position(lf.localFilePos().longValueExact());
 		return ZipReturn.ZipGood;
 	}
 

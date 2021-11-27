@@ -71,7 +71,7 @@ public final class LocalFile implements Closeable, AutoCloseable
 		fileName = filename;
 	}
 
-	public final void CenteralDirectoryWrite(EnhancedSeekableByteChannel esbc) throws IOException
+	public final void centeralDirectoryWrite(EnhancedSeekableByteChannel esbc) throws IOException
 	{
 
 		final var header = 0x02014B50;
@@ -158,7 +158,7 @@ public final class LocalFile implements Closeable, AutoCloseable
 		// No File Comment
 	}
 
-	public final ZipReturn CentralDirectoryRead()
+	public final ZipReturn centralDirectoryRead()
 	{
 		try
 		{
@@ -263,13 +263,13 @@ public final class LocalFile implements Closeable, AutoCloseable
 			this.esbc.close();
 	}
 
-	public final void LocalFileAddDirectory() throws IOException
+	public final void localFileAddDirectory() throws IOException
 	{
 		esbc.put((byte) 3);
 		esbc.put((byte) 0);
 	}
 
-	public final void LocalFileCheck()
+	public final void localFileCheck()
 	{
 		if (getFileStatus() != ZipReturn.ZipUntested)
 			return;
@@ -338,7 +338,7 @@ public final class LocalFile implements Closeable, AutoCloseable
 		}
 	}
 
-	public final ZipReturn LocalFileCloseReadStream() throws IOException
+	public final ZipReturn localFileCloseReadStream() throws IOException
 	{
 		InputStream dfStream = readStream;
 		if (dfStream != null)
@@ -349,7 +349,7 @@ public final class LocalFile implements Closeable, AutoCloseable
 		return ZipReturn.ZipGood;
 	}
 
-	public final ZipReturn LocalFileCloseWriteStream(byte[] crc32) throws IOException
+	public final ZipReturn localFileCloseWriteStream(byte[] crc32) throws IOException
 	{
 		OutputStream dfStream = writeStream;
 		if (dfStream != null)
@@ -362,7 +362,7 @@ public final class LocalFile implements Closeable, AutoCloseable
 
 		if (compressedSize.longValue() == 0x0L && getUncompressedSize().longValue() == 0x0L)
 		{
-			LocalFileAddDirectory();
+			localFileAddDirectory();
 			compressedSize = BigInteger.valueOf(esbc.position() - dataLocation);
 		}
 
@@ -372,7 +372,7 @@ public final class LocalFile implements Closeable, AutoCloseable
 		return ZipReturn.ZipGood;
 	}
 
-	public final ZipReturn LocalFileHeaderRead()
+	public final ZipReturn localFileHeaderRead()
 	{
 		try
 		{
@@ -517,7 +517,7 @@ public final class LocalFile implements Closeable, AutoCloseable
 
 	}
 
-	public final ZipReturn LocalFileHeaderReadQuick()
+	public final ZipReturn localFileHeaderReadQuick()
 	{
 		try
 		{
@@ -606,7 +606,7 @@ public final class LocalFile implements Closeable, AutoCloseable
 
 	}
 
-	private final void LocalFileHeaderWrite() throws IOException
+	private final void localFileHeaderWrite() throws IOException
 	{
 		List<Byte> extraField = new ArrayList<>();
 		zip64 = getUncompressedSize().compareTo(BigInteger.valueOf(0xffffffffL)) >= 0;
@@ -660,7 +660,7 @@ public final class LocalFile implements Closeable, AutoCloseable
 			esbc.put(b);
 	}
 
-	public final ZipReturn LocalFileOpenReadStream(boolean raw, AtomicReference<InputStream> stream, AtomicReference<BigInteger> streamSize, AtomicInteger cMethod, AtomicReference<Inflater> inflater) throws IOException
+	public final ZipReturn localFileOpenReadStream(boolean raw, AtomicReference<InputStream> stream, AtomicReference<BigInteger> streamSize, AtomicInteger cMethod, AtomicReference<Inflater> inflater) throws IOException
 	{
 		streamSize.set(BigInteger.valueOf(0));
 		cMethod.set(compressionMethod);
@@ -701,12 +701,12 @@ public final class LocalFile implements Closeable, AutoCloseable
 		return stream.get() == null ? ZipReturn.ZipErrorGettingDataStream : ZipReturn.ZipGood;
 	}
 
-	public final ZipReturn LocalFileOpenWriteStream(boolean raw, boolean tZip, BigInteger uSize, int cMethod, AtomicReference<OutputStream> stream, AtomicReference<Deflater> deflater) throws IOException
+	public final ZipReturn localFileOpenWriteStream(boolean raw, boolean tZip, BigInteger uSize, int cMethod, AtomicReference<OutputStream> stream, AtomicReference<Deflater> deflater) throws IOException
 	{
 		uncompressedSize = uSize;
 		compressionMethod = cMethod;
 
-		LocalFileHeaderWrite();
+		localFileHeaderWrite();
 		dataLocation = esbc.position();
 
 		if (raw)
@@ -736,12 +736,12 @@ public final class LocalFile implements Closeable, AutoCloseable
 		return stream.get() == null ? ZipReturn.ZipErrorGettingDataStream : ZipReturn.ZipGood;
 	}
 
-	public final BigInteger LocalFilePos()
+	public final BigInteger localFilePos()
 	{
 		return getRelativeOffsetOfLocalHeader();
 	}
 
-	public final void LocalFilePos(BigInteger value)
+	public final void localFilePos(BigInteger value)
 	{
 		relativeOffsetOfLocalHeader = value;
 	}

@@ -11,7 +11,7 @@ public class TorrentZipCheck
 		throw new IllegalStateException("Utility class");
 	}
 
-	public static Set<TrrntZipStatus> CheckZipFiles(final List<ZippedFile> zippedFiles, final LogCallback StatusLogCallBack)
+	public static Set<TrrntZipStatus> checkZipFiles(final List<ZippedFile> zippedFiles, final LogCallback StatusLogCallBack)
 	{
 		final EnumSet<TrrntZipStatus> tzStatus = EnumSet.noneOf(TrrntZipStatus.class);
 

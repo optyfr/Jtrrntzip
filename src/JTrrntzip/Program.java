@@ -109,7 +109,7 @@ public final class Program extends AbstractTorrentZipOptions implements LogCallb
 				final String ext = FilenameUtils.getExtension(f.getName());
 				if(ext != null && (ext.equalsIgnoreCase("zip"))) //$NON-NLS-1$
 				{
-					tz.Process(f);
+					tz.process(f);
 				}
 			}
 		}
@@ -117,7 +117,7 @@ public final class Program extends AbstractTorrentZipOptions implements LogCallb
 
 	private void processFile(final File file) throws IOException
 	{
-		tz.Process(file);
+		tz.process(file);
 	}
 
 	@Override

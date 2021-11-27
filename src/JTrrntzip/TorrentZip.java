@@ -25,7 +25,7 @@ public final class TorrentZip
 		buffer = new byte[8 * 1024];
 	}
 
-	public final Set<TrrntZipStatus> Process(final File f) throws IOException
+	public final Set<TrrntZipStatus> process(final File f) throws IOException
 	{
 		if(statusLogCallBack.isVerboseLogging())
 			statusLogCallBack.statusLogCallBack(""); //$NON-NLS-1$
@@ -35,7 +35,7 @@ public final class TorrentZip
 		// First open the zip file, and fail out if it is corrupt.
 
 		final AtomicReference<ICompress> zipFile = new AtomicReference<>();
-		final EnumSet<TrrntZipStatus> tzs = OpenZip(f, zipFile);
+		final EnumSet<TrrntZipStatus> tzs = openZip(f, zipFile);
 		// this will return ValidTrrntZip or CorruptZip.
 
 		if(tzs.contains(TrrntZipStatus.CorruptZip))
@@ -47,8 +47,8 @@ public final class TorrentZip
 		// the zip file may have found a valid trrntzip header, but we now check that all the file info
 		// is actually valid, and may invalidate it being a valid trrntzip if any problem is found.
 
-		final List<ZippedFile> zippedFiles = ReadZipContent(zipFile.get());
-		tzs.addAll(TorrentZipCheck.CheckZipFiles(zippedFiles,statusLogCallBack));
+		final List<ZippedFile> zippedFiles = readZipContent(zipFile.get());
+		tzs.addAll(TorrentZipCheck.checkZipFiles(zippedFiles,statusLogCallBack));
 
 		// if tza is now just 'ValidTrrntzip' the it is fully valid, and nothing needs to be done to it.
 
@@ -65,10 +65,10 @@ public final class TorrentZip
 			return tzs;
 		}
 		statusLogCallBack.statusLogCallBack(Messages.getString("TorrentZip.TorrentZipping")); //$NON-NLS-1$
-		return TorrentZipRebuild.ReZipFiles(zippedFiles, zipFile.get(), buffer, statusLogCallBack);
+		return TorrentZipRebuild.reZipFiles(zippedFiles, zipFile.get(), buffer, statusLogCallBack);
 	}
 
-	private final EnumSet<TrrntZipStatus> OpenZip(final File f, final AtomicReference<ICompress> zipFile) throws IOException
+	private final EnumSet<TrrntZipStatus> openZip(final File f, final AtomicReference<ICompress> zipFile) throws IOException
 	{
 		zipFile.set(new ZipFile());
 
@@ -87,7 +87,7 @@ public final class TorrentZip
 		return tzStatus;
 	}
 
-	private final List<ZippedFile> ReadZipContent(final ICompress zipFile)
+	private final List<ZippedFile> readZipContent(final ICompress zipFile)
 	{
 		final List<ZippedFile> zippedFiles = new ArrayList<>();
 		for(var i = 0; i < zipFile.localFilesCount(); i++)
