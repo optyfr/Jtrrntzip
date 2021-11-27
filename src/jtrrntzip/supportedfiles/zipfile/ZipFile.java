@@ -1,4 +1,4 @@
-package JTrrntzip.SupportedFiles.ZipFile;
+package jtrrntzip.supportedfiles.zipfile;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,12 +17,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
-import JTrrntzip.Messages;
-import JTrrntzip.ZipOpenType;
-import JTrrntzip.ZipReturn;
-import JTrrntzip.ZipStatus;
-import JTrrntzip.SupportedFiles.EnhancedSeekableByteChannel;
-import JTrrntzip.SupportedFiles.ICompress;
+import jtrrntzip.Messages;
+import jtrrntzip.ZipOpenType;
+import jtrrntzip.ZipReturn;
+import jtrrntzip.ZipStatus;
+import jtrrntzip.supportedfiles.EnhancedSeekableByteChannel;
+import jtrrntzip.supportedfiles.ICompress;
 
 public final class ZipFile implements ICompress
 {

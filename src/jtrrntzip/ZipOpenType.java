@@ -1,4 +1,4 @@
-package JTrrntzip;
+package jtrrntzip;
 
 public enum ZipOpenType
 {

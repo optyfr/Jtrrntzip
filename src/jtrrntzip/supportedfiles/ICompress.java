@@ -1,4 +1,4 @@
-package JTrrntzip.SupportedFiles;
+package jtrrntzip.supportedfiles;
 
 import java.io.Closeable;
 import java.io.File;
@@ -8,9 +8,9 @@ import java.math.BigInteger;
 import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicReference;
 
-import JTrrntzip.ZipOpenType;
-import JTrrntzip.ZipReturn;
-import JTrrntzip.ZipStatus;
+import jtrrntzip.ZipOpenType;
+import jtrrntzip.ZipReturn;
+import jtrrntzip.ZipStatus;
 
 public interface ICompress extends Closeable, AutoCloseable
 {

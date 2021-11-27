@@ -1,4 +1,4 @@
-package JTrrntzip;
+package jtrrntzip;
 
 public class SimpleTorrentZipOptions implements TorrentZipOptions
 {

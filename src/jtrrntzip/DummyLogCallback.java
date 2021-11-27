@@ -1,4 +1,4 @@
-package JTrrntzip;
+package jtrrntzip;
 
 public class DummyLogCallback implements LogCallback
 {

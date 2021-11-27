@@ -1,4 +1,4 @@
-package JTrrntzip;
+package jtrrntzip;
 
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;

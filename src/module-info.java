@@ -1,8 +1,8 @@
 module trrntzip
 {
-	exports JTrrntzip.SupportedFiles;
-	exports JTrrntzip.SupportedFiles.ZipFile;
-	exports JTrrntzip;
+	exports jtrrntzip.supportedfiles;
+	exports jtrrntzip.supportedfiles.zipfile;
+	exports jtrrntzip;
 
 	requires org.apache.commons.codec;
 	requires org.apache.commons.io;

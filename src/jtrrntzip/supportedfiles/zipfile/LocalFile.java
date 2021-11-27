@@ -1,4 +1,4 @@
-package JTrrntzip.SupportedFiles.ZipFile;
+package jtrrntzip.supportedfiles.zipfile;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -21,9 +21,9 @@ import java.util.zip.InflaterInputStream;
 
 import org.apache.commons.io.input.BoundedInputStream;
 
-import JTrrntzip.ZipReturn;
-import JTrrntzip.SupportedFiles.EnhancedSeekableByteChannel;
-import JTrrntzip.SupportedFiles.UnsignedTypes;
+import jtrrntzip.ZipReturn;
+import jtrrntzip.supportedfiles.EnhancedSeekableByteChannel;
+import jtrrntzip.supportedfiles.UnsignedTypes;
 
 public final class LocalFile implements Closeable, AutoCloseable
 {

@@ -1,4 +1,4 @@
-package JTrrntzip;
+package jtrrntzip;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -13,7 +13,7 @@ public class ZippedFile
 	private BigInteger size;
 	private int crc;
 
-	public final byte[] getCRC()
+	public final byte[] getLECRC()
 	{
 		final var bb = ByteBuffer.allocate(4);
 		bb.order(ByteOrder.LITTLE_ENDIAN);
@@ -29,7 +29,7 @@ public class ZippedFile
 	@Override
 	public final String toString()
 	{
-		return Hex.encodeHexString(getCRC());
+		return Hex.encodeHexString(getLECRC());
 	}
 
 	/**

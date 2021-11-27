@@ -1,4 +1,4 @@
-package JTrrntzip;
+package jtrrntzip;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import JTrrntzip.SupportedFiles.ICompress;
-import JTrrntzip.SupportedFiles.ZipFile.ZipFile;
+import jtrrntzip.supportedfiles.ICompress;
+import jtrrntzip.supportedfiles.zipfile.ZipFile;
 
 public final class TorrentZip
 {

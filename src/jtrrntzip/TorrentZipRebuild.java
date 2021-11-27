@@ -1,4 +1,4 @@
-package JTrrntzip;
+package jtrrntzip;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -21,8 +21,8 @@ import java.util.zip.DeflaterOutputStream;
 
 import org.apache.commons.io.FilenameUtils;
 
-import JTrrntzip.SupportedFiles.ICompress;
-import JTrrntzip.SupportedFiles.ZipFile.ZipFile;
+import jtrrntzip.supportedfiles.ICompress;
+import jtrrntzip.supportedfiles.zipfile.ZipFile;
 
 public final class TorrentZipRebuild
 {
@@ -142,7 +142,7 @@ public final class TorrentZipRebuild
 					if ((int) crc != t.getCrc())
 						return EnumSet.of(TrrntZipStatus.CorruptZip);
 
-					zipFileOut.zipFileCloseWriteStream(t.getCRC());
+					zipFileOut.zipFileCloseWriteStream(t.getLECRC());
 				}
 
 				zipFileOut.zipFileClose();

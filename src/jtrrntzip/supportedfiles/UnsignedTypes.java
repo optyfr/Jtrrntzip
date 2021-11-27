@@ -1,4 +1,4 @@
-package JTrrntzip.SupportedFiles;
+package jtrrntzip.supportedfiles;
 
 import java.math.BigInteger;
 
