@@ -1,5 +1,6 @@
 plugins {
 	id 'java' 
+	id "maven-publish"
 	id "org.sonarqube"
 	id "org.beryx.jlink" version "2.21.2"
 	id "org.javamodularity.moduleplugin" version "1.7.0"
@@ -92,14 +93,77 @@ jar {
         	"Implementation-Title" : "JTrrntzip",
             "Implementation-Version" : props.getProperty("Implementation-Version"),
             "Main-Class"           : "jtrrntzip.Program",
-            "Class-Path"           : configurations.compileClasspath.collect { 'lib/' + it.getName() }.join(' ')
+            "Class-Path"           : configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
 		)
 		archiveFileName = project.archivesBaseName + '.jar'
 	}
 }
 
+group = "optyfr"
+
+task sourcesJar(type: Jar) {
+    duplicatesStrategy = 'include'
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "jtrrntzip"
+            url = uri("https://maven.pkg.github.com/optyfr/Jtrrntzip")
+            credentials {
+                username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+                password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
+            }
+        }
+    }
+    publications {
+        gpr(MavenPublication) {
+            artifactId = "jtrrntzip"
+            from(components.java)
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+            pom {
+                name = 'JTrrntzip'
+                description = 'Java version of trrntzip Based on C# code from TrrntzipDN by GordonJ'
+                url = 'https://github.com/optyfr/Jtrrntzip'
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'https://raw.githubusercontent.com/optyfr/Jtrrntzip/master/LICENSE'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'optyfr'
+                        name = 'optyfr'
+                        email = '17027109+optyfr@users.noreply.github.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/optyfr/Jtrrntzip.git'
+                    developerConnection = 'scm:git:git@github.com:optyfr/Jtrrntzip.git'
+                    url = 'https://github.com/optyfr/Jtrrntzip.git'
+                }
+            }
+        }
+    }
+}
+
 task distZip2(type: Zip, dependsOn: jar) {
-	from (configurations.compileClasspath) {
+	from (configurations.runtimeClasspath) {
 		into('lib')
 	}
 	from (jar)
