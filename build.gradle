@@ -99,7 +99,7 @@ jar {
 	}
 }
 
-group = "optyfr"
+group = "com.github.optyfr"
 
 task sourcesJar(type: Jar) {
     duplicatesStrategy = 'include'
