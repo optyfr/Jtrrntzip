@@ -26,7 +26,7 @@ apply plugin: 'org.javamodularity.moduleplugin'
 def props = new Properties()
 file("dist/ver.properties").withInputStream { props.load(it) }
 
-version = props.getProperty("Specification-Version")+props.getProperty("Implementation-Version")
+version = props.getProperty("Specification-Version") + '.' + props.getProperty("Implementation-Version")
 
 repositories {
 	mavenCentral()
