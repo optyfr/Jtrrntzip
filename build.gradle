@@ -93,7 +93,7 @@ jar {
         	"Implementation-Title" : "JTrrntzip",
             "Implementation-Version" : props.getProperty("Implementation-Version"),
             "Main-Class"           : "jtrrntzip.Program",
-            "Class-Path"           : configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+//            "Class-Path"           : configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
 		)
 		archiveFileName = project.archivesBaseName + '.jar'
 	}
